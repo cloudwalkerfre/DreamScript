@@ -1,4 +1,4 @@
-### A movie script editing tool
+### A movie script writing tool
 ---
 
 *TRY TO:*  
@@ -23,31 +23,39 @@
 **mobx script**:  
 
     {script:
-      [
-        {titlePage: script info},
-        {page: [
+      {
+        titlePage:
+        {
+          Title: 'LA LA LAND',
+          By-line: 'Damien Chazelle'
+        },
+        Paragraph: [
           ...
-          {Paragraph:
-            {Scene: [
-                {Time: 'AFTERNOON'},
-                {Location: 'INI. AUDITION OFFICE'}
-            ]}
-          },
-          {Paragraph: General},
-          {Paragraph: Shot},
-          {Paragraph: Action},
-          ...
-          {Paragraph:
-            {Character: 'MIA'}
-          },
-          {Paragraph:
-            {Dialogue:
-              "
-                Here's to the ones who dream, Foolish as they may seem. Here's to the hearts that ache. Here's to the mess we make...
-              "
-            },
+          {$Type: 'General'},
+          {$Type: 'Action', _ :
+            'Mia gathers her nerves. Gets up. And steps in.'
           },
           ...
-        ]}
-      ]
+          {$Type: 'Scene Heading' , _ :
+          {
+            Location: 'INI. AUDITION OFFICE',
+            Time: 'AFTERNOON'
+          },
+          ...
+          {$Type: 'Shot', _ :
+            'WE RETURN to the AUDITION ROOM... Brandt and Frank waiting...'
+          },
+          ...
+          },
+          {$Type: 'Character', _ :  
+            'MIA'
+          },
+          {$Type: 'Dialogue', _ :
+            "
+              Here's to the ones who dream, Foolish as they may seem. Here's to the hearts that ache. Here's to the mess we make...
+            "
+          },
+          ...
+        ]
+      }
     }

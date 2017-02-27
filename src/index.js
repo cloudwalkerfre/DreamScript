@@ -15,3 +15,9 @@ const routes = (
 )
 
 ReactDOM.render(routes, document.querySelector('#root'));
+
+window.addEventListener('keydown',(e) => {
+    if(e.target.id === 'paragraph'){
+      script.handleKey(e, parseInt(e.target.attributes['data-unique'].value));
+    }
+});

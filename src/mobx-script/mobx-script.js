@@ -1,23 +1,17 @@
-import { observable, computed, action, autorun } from 'mobx';
-
-const blanket_Paragraph = {Paragraph: ''}
-
-// basiclly margin height
-const Hdata = {
-  'para-fadein': 20, 'para-action': 20, 'para-scene': 30, 'para-shot': 30, 'para-character': 20,
-  'para-dialogue': 0, 'para-parenthetical': 0, 'para-transition': 20
-};
-// Paragraph type
-const options =  ['para-scene', 'para-action','para-character','para-parenthetical','para-dialogue','para-transition','para-shot'];
-
+import { observable, action, computed } from 'mobx';
 
 export default class mobxScript{
   // Paragraph array
   @observable page = [];
   // Page iter_indicator, star to end
-  @observable pages = [];
-
+  @observable.struct pages = [];
+  // Paragraph selector
   @observable selectbox = {};
+  // Paragraph type
+  @observable.ref options =  ['para-scene', 'para-action','para-character','para-parenthetical','para-dialogue','para-transition','para-shot'];
+  // Paragraph margins
+  @observable.ref Hdata = {'para-fadein': 20, 'para-action': 20, 'para-scene': 30, 'para-shot': 30, 'para-character': 20, 'para-dialogue': 0, 'para-parenthetical': 0, 'para-transition': 20};
+
 
   // @observable cursor = 0;
   //
@@ -31,41 +25,65 @@ export default class mobxScript{
   // @observable General = [];
 
   constructor(){
-    this.page.push({type: 'para-fadein', focus: true, text: 'FADE IN:', selectionStart: 8, height: 16 + Hdata['para-fadein'], key: Math.random(), line: 1});
-    this.pages[0] = [0,0];
+    this.page.push({type: 'para-fadein', focus: true, text: 'FADE IN:', selectionStart: 8, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
+    this.pages.push([0,0]);
     this.selectbox = {top:0, left:0,right:0, display: 'none'};
   }
+
+
+  // @computed get pageArray(){
+  //   return this.page;
+  // }
+  //
+  // @computed get pageIter(){
+  //   return this.pages;
+  // }
 
   /* ------------------------------------------------------
 
     page separation monitor
 
   ------------------------------------------------------ */
-  @action pageSeperation_monitor(){
-    let height = 0;
-    let Iter = 0;
-    let pageCount = 0;
-    let flag = 0;
+  @action pageSeperation_monitor(current_page){
+      //go back one more page when counting
+      current_page = (current_page === 0 ? 0 : current_page -- );
+      // console.log(current_page, this.pages.length, this.pages[0][0])
 
-    let pageNumOld = this.pages.length;
-    const paraLength = this.page.length;
+      let height = 0;
+      let Iter = this.pages[current_page][0];
+      let pageCount = current_page;
+      let flag = this.pages[current_page][0];
 
-    for(;Iter < paraLength; Iter ++){
-      height += this.page[Iter].height;
-      // console.log(height)
+      let pageNumOld = this.pages.length;
+      const paraLength = this.page.length;
 
-      if(height > 920){
-        this.pages[pageCount] = [flag, Iter];
-        height = 0;
-        pageCount++;
-        flag = Iter;
+      for(;Iter < paraLength; Iter++){
+        height += this.page[Iter].height;
+        // console.log(height)
+        if(height > 920 && height < 980){
+          this.pages[pageCount] = [flag, Iter];
+          height = 0;
+          pageCount++;
+          flag = Iter;
 
-        this.pages[pageCount] = [flag, 0];
+          this.pages[pageCount] = [flag, 0];
+          console.log(pageCount)
+        }
+
+        else if(height > 950){
+          // stay where you are
+          this.pages[pageCount] = [flag, --Iter];
+          height = 0;
+          pageCount++;
+          flag = Iter;
+
+          this.pages[pageCount] = [flag, 0];
+          console.log(pageCount)
+        }
       }
-    }
-    if(pageCount < pageNumOld){
-      this.pages.splice(pageCount + 1);
-    }
+      if(pageCount < pageNumOld){
+        this.pages.splice(pageCount + 1);
+      }
   };
 
   /* ------------------------------------------------------
@@ -81,7 +99,7 @@ export default class mobxScript{
     this.selectbox.display='none';
 
     this.page[index].type = className;
-    this.page[index].height = 16 + Hdata[className];
+    this.page[index].height = 16 + this.Hdata[className];
     this.page[index].text = '';
     this.page[index].focus = true;
   }
@@ -93,6 +111,9 @@ export default class mobxScript{
 
   ------------------------------------------------------ */
   @action handleKey(e, index){
+    // console.log(e.keyCode, e.target.selectionStart)
+    // console.log(e.target.getBoundingClientRect());
+    // console.log(e.target)
 
     /* ------------------------------------------------------
     calculate and update qurrent target height and line
@@ -110,7 +131,7 @@ export default class mobxScript{
           }
         })
       }
-      targetHeight += (Hdata[this.page[index].type] + 16 * lineNum)
+      targetHeight += (this.Hdata[this.page[index].type] + 16 * lineNum)
 
       if(this.page[index].height != targetHeight){
         this.page[index].height = targetHeight;
@@ -121,8 +142,6 @@ export default class mobxScript{
     let newPara;
     let changingFlag = true;
 
-    // console.log(e.keyCode, e.target.selectionStart)
-    // console.log(e.target.getBoundingClientRect());
 
     /* ------------------------------------------------------
       ctrl is bind fro mac, windows not considered... sorry
@@ -155,13 +174,12 @@ export default class mobxScript{
         this.selectbox.display = 'block';
         this.page[index].focus = false;
 
-        return false;
       }
 
       /* ------------------------------------------------------
       If current paragraph is not empty, adding a new paragraph
       ------------------------------------------------------ */
-      newPara = {type: options[e.keyCode - 49], focus: true, height: 16 + Hdata[options[e.keyCode - 49]], key: Math.random(), line: 1};
+      newPara = {type: this.options[e.keyCode - 49], focus: true, height: 16 + this.Hdata[this.options[e.keyCode - 49]], key: Math.random(), line: 1};
       // case: ctrl+4 => parenthetical
       if(e.keyCode === 52){
         newPara.text = '()';
@@ -212,50 +230,49 @@ export default class mobxScript{
       else if(!e.shiftKey){
         e.preventDefault();
 
-        let className = e.currentTarget.className;
+        let className = e.target.className;
         switch (className) {
           case 'para-fadein':
-            newPara = {type: 'para-scene', focus: true, height: 16 + Hdata['para-scene'], key: Math.random(), line: 1};
+            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-action':
-            newPara = {type: 'para-action', focus: true, height: 16 + Hdata['para-action'], key: Math.random(), line: 1};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-scene':
-            newPara = {type: 'para-action', focus: true, height: 16 + Hdata['para-action'], key: Math.random(), line: 1};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-character':
-            newPara = {type: 'para-dialogue', focus: true, height: 16 + Hdata['para-dialogue'], key: Math.random(), line: 1};
+            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-parenthetical':
-            newPara = {type: 'para-dialogue', focus: true, height: 16 + Hdata['para-dialogue'], key: Math.random(), line: 1};
+            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-dialogue':
-            newPara = {type: 'para-action', focus: true, height: 16 + Hdata['para-action'], key: Math.random(), line: 1};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-transition':
-            newPara = {type: 'para-scene', focus: true, height: 16 + Hdata['para-scene'], key: Math.random(), line: 1};
+            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
           case 'para-shot':
-            newPara = {type: 'para-action', focus: true, height: 16 + Hdata['para-action'], key: Math.random(), line: 1};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1};
             this.page.splice(index + 1, 0, newPara);
             this.page[index].focus = false;
             break;
         }
-        // console.log('page Length:', this.page.length);
       }
     }
 
@@ -265,9 +282,9 @@ export default class mobxScript{
     else if (e.keyCode === 8 && !this.page[index].text) {
       e.preventDefault();
       if(index != 0){
-        this.page.splice(index, 1);
         this.page[index - 1].focus = true;
         this.page[index - 1].selectionStart = this.page[index - 1].text ? this.page[index - 1].text.length : 0;
+        this.page.splice(index, 1);
       }
     }
 
@@ -333,7 +350,7 @@ export default class mobxScript{
     }
 
 
-    changingFlag ? this.pageSeperation_monitor():'';
+    changingFlag ? this.pageSeperation_monitor(parseInt(e.target.attributes['data-pageNumber'].value)) : '';
   }
 
 }

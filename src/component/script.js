@@ -9,7 +9,10 @@ import SelectBox from './selectbox'
 
 @inject('script') @observer
 export default class Script extends Component{
-
+  componentWillUpdate(a,b){
+    // console.log(123);
+    return false;
+  }
   render(){
     const {script} = this.props;
     return (

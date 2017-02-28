@@ -13,8 +13,8 @@ export default class Script extends Component{
     //Paragraphs go in here
     const Paras = [];
 
-    for(let index = pageIter[0]; index < (pageIter[1] === 0 ? script.page.length : Math.min(script.page.length, pageIter[1])); index++){
-      Paras.push(<Paragraph key={script.page[index].key}  para={script.page[index]} unique={index} pageNumber={pageNumber} />)
+    for(let index = pageIter[0]; index < (pageIter[1] === 0 ? script.paragraphs.length : Math.min(script.paragraphs.length, pageIter[1])); index++){
+      Paras.push(<Paragraph key={script.paragraphs[index].key}  para={script.paragraphs[index]} unique={index} pageNumber={pageNumber} />)
     }
 
     return (

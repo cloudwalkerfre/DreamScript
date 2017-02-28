@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import ReactDOM from 'react-dom';
 
+/*
+  Find and place cursor in div-editable
+*/
 function SetCaretPosition(el, offset){
   for(let node of el.childNodes){
     if(node.nodeType == 3){
@@ -56,7 +59,6 @@ export default class Paragraph extends Component{
           contentEditable
           className={para.type}
           id={'paragraph'}
-          // autoHeight
           onBlur={() => para.focus = false}
           onFocus={() => para.focus = true}
           dangerouslySetInnerHTML={{__html: para.innerHTML || ""}}

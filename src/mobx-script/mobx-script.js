@@ -7,7 +7,7 @@ import { observable, action } from 'mobx';
 */
 export default class mobxScript{
   // Paragraph array
-  @observable page = [];
+  @observable paragraphs = [];
   // Page iter_indicator, star to end
   @observable.struct pages = [];
   // Paragraph selector
@@ -16,7 +16,8 @@ export default class mobxScript{
   @observable.ref options =  ['para-scene', 'para-action','para-character','para-parenthetical','para-dialogue','para-transition','para-shot'];
   // Paragraph margins
   @observable.ref Hdata = {'para-fadein': 20, 'para-action': 20, 'para-scene': 30, 'para-shot': 30, 'para-character': 20, 'para-dialogue': 0, 'para-parenthetical': 0, 'para-transition': 20};
-
+  // char number in line of each type of paragraph, based on 12pt courier font family,
+  // which is the standard font in movie script, so we really don't need the extra calculating work
   @observable.ref lineCharNum = {'para-fadein': 61, 'para-action': 61, 'para-scene': 61, 'para-shot': 61, 'para-character': 61, 'para-dialogue':35, 'para-parenthetical': 35, 'para-transition': 61};
 
   // @observable cursor = 0;
@@ -30,15 +31,19 @@ export default class mobxScript{
   // @observable Parenthetical = [];
   // @observable General = [];
 
+
   constructor(){
-    this.page.push({type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
+    // First line is always FADE IN:
+    this.paragraphs.push({type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
+    // Initialize first page
     this.pages.push([0,0]);
+    // Initialize select box
     this.selectbox = {top:0, left:0,right:0, display: 'none'};
   }
 
 
   // @computed get pageArray(){
-  //   return this.page;
+  //   return this.paragraphs;
   // }
   //
   // @computed get pageIter(){
@@ -61,10 +66,17 @@ export default class mobxScript{
       let flag = this.pages[current_page][0];
 
       let pageNumOld = this.pages.length;
-      const paraLength = this.page.length;
+      const paraLength = this.paragraphs.length;
 
+      /*
+        How to maintain the certain height of script is join effort of both
+        software and writer's personal preference, because it's the type of
+        thing that hint about the rhythm and flow of a script...
+        So, if you want to keep it short, just type in empty graphs with space.
+        I leave the most area that you can work with.
+      */
       for(;Iter < paraLength; Iter++){
-        height += this.page[Iter].height;
+        height += this.paragraphs[Iter].height;
         // console.log(height)
         if(height > 920 && height < 980){
           this.pages[pageCount] = [flag, Iter];
@@ -96,6 +108,13 @@ export default class mobxScript{
 
     handle paragraph selection
 
+    Select Box will pop up under two condition:
+      1. you press enter when your current paragraph is empty
+      2. you make a short-cut call when your paragraph is empty
+
+    which means, empty graphs is not allowed, If you want blank space,
+    just type in space and leave it.
+
   ------------------------------------------------------ */
   @action handleSelect(e, index){
     // console.log(e.target.value, index, e.keyCode)
@@ -104,13 +123,20 @@ export default class mobxScript{
     let className = e.target.value;
     this.selectbox.display='none';
 
-    this.page[index].type = className;
-    this.page[index].height = 16 + this.Hdata[className];
-    this.page[index].text = this.page[index].innerHTML = (className === 'para-parenthetical' ? "()" : "");
-    this.page[index].focus = true;
-    this.page[index].selectionStart = (className === 'para-parenthetical' ? {line:0,offset:1} : {line:0,offset:0});
-    this.page[index].line = 1;
+    this.paragraphs[index].type = className;
+    this.paragraphs[index].height = 16 + this.Hdata[className];
+    this.paragraphs[index].text = this.paragraphs[index].innerHTML = (className === 'para-parenthetical' ? "()" : "");
+    this.paragraphs[index].focus = true;
+    this.paragraphs[index].selectionStart = (className === 'para-parenthetical' ? {line:0,offset:1} : {line:0,offset:0});
+    this.paragraphs[index].line = 1;
   }
+
+  /*
+    disappearing the select box when scrolling
+  */
+  // @action handleScroll(){
+  //   this.selectbox.display='none';
+  // }
 
 
   /* ------------------------------------------------------
@@ -133,29 +159,29 @@ export default class mobxScript{
       compute cursor line and offset in current div-editable
     */
     if(targetId === 'paragraph'){
-      this.page[index].selectionStart.offset = RecursionCounter(targetElement)[0];
-      this.page[index].selectionStart.line = parseInt(this.page[index].selectionStart.offset / this.lineCharNum[targetClassName]);
+      this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
+      this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
     }
 
     /* ------------------------------------------------------
       calculate and update qurrent target height and line
     ------------------------------------------------------ */
-    if(targetInnerHTML != this.page[index].innerHTML){
+    if(targetInnerHTML != this.paragraphs[index].innerHTML){
       // we need them both
-      this.page[index].innerHTML = targetInnerHTML;
-      this.page[index].text = targetText;
+      this.paragraphs[index].innerHTML = targetInnerHTML;
+      this.paragraphs[index].text = targetText;
+      this.paragraphs[index].height = targetHeight;
 
       // updating line number
-      this.page[index].height = targetHeight;
-      this.page[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
+      this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
     }
 
-    //// ======================     DEBUG HERE    ==========================================
+    //// ======================     DEBUG HERE    ========================================== ////
 
-    // console.log(this.page[index].selectionStart.offset, this.page[index].text.length)
-    console.log(this.page[index].line, this.page[index].selectionStart.line)
+    // console.log(this.paragraphs[index].selectionStart.offset, this.paragraphs[index].text.length)
+    // console.log(this.paragraphs[index].line, this.paragraphs[index].selectionStart.line)
 
-    //// ======================     DEBUG HERE    ==========================================
+    //// ======================     DEBUG HERE    ========================================== ////
 
 
     /* ------------------------------------------------------
@@ -175,12 +201,12 @@ export default class mobxScript{
         If current paragraph is empty, updating current focus
         target position for a selectbox
       ------------------------------------------------------ */
-      if(this.page[index].innerHTML.length === 0){
+      if(this.paragraphs[index].innerHTML.length === 0){
         e.preventDefault();
         const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
-        this.selectbox.top += this.page[index].height;
+        this.selectbox.top += this.paragraphs[index].height;
 
         this.selectbox.left = ClientRect.left;
         this.selectbox.right = ClientRect.right;
@@ -188,7 +214,7 @@ export default class mobxScript{
         // show selectbox
         this.selectbox.index = index;
         this.selectbox.display = 'block';
-        this.page[index].focus = false;
+        this.paragraphs[index].focus = false;
       }else{
 
         /* ------------------------------------------------------
@@ -200,16 +226,16 @@ export default class mobxScript{
           newPara.innerHTML = newPara.text = "()";
           newPara.selectionStart = {line:0,offset:1}
         }
-        this.page.splice(index + 1, 0, newPara);
-        this.page[index].focus = false;
+        this.paragraphs.splice(index + 1, 0, newPara);
+        this.paragraphs[index].focus = false;
 
-        // console.log(this.page[index].type);
+        // console.log(this.paragraphs[index].type);
       }
 
     }
 
     /* ------------------------------------------------------
-      If keydown Enter:
+      If keydown Enter, logic goes this:
 
       FadeIn => new Scene
       Action => new Action
@@ -225,12 +251,12 @@ export default class mobxScript{
         If current paragraph is empty, updating current focus target position
         for a selectbox
       ------------------------------------------------------ */
-      if(this.page[index].innerHTML.length === 0){
+      if(this.paragraphs[index].innerHTML.length === 0){
         e.preventDefault();
         const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
-        this.selectbox.top += this.page[index].height;
+        this.selectbox.top += this.paragraphs[index].height;
 
         this.selectbox.left = ClientRect.left;
         this.selectbox.right = ClientRect.right;
@@ -238,12 +264,12 @@ export default class mobxScript{
         // show selectbox
         this.selectbox.index = index;
         this.selectbox.display = 'block';
-        this.page[index].focus = false;
+        this.paragraphs[index].focus = false;
       }
 
       /* ------------------------------------------------------
         If current paragraph is not empty, adding a new paragraph
-        Do not allowed shit-enter, just satrt a new paragraph
+        Do not allowed shift-enter, just satrt a new paragraph
       ------------------------------------------------------ */
       else{
         e.preventDefault();
@@ -251,43 +277,43 @@ export default class mobxScript{
         switch (targetClassName) {
           case 'para-fadein':
             newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-action':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-scene':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-character':
             newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-parenthetical':
             newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-dialogue':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-transition':
             newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
           case 'para-shot':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
-            this.page.splice(index + 1, 0, newPara);
-            this.page[index].focus = false;
+            this.paragraphs.splice(index + 1, 0, newPara);
+            this.paragraphs[index].focus = false;
             break;
         }
       }
@@ -296,82 +322,86 @@ export default class mobxScript{
     /* ------------------------------------------------------
       If keydown delete when empty text
     ------------------------------------------------------ */
-    else if (e.keyCode === 8 && !this.page[index].innerHTML) {
+    else if (e.keyCode === 8 && !this.paragraphs[index].innerHTML) {
       e.preventDefault();
       if(index != 0){
-        this.page[index - 1].focus = true;
-        this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: this.page[index - 1].text.length};
-        this.page.splice(index, 1);
+        this.paragraphs[index - 1].focus = true;
+        this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
+        this.paragraphs.splice(index, 1);
       }
     }
 
 
 
     /* ------------------------------------------------------
-      keys that have no effect on pageHeight
+      If keydown backward when cursor at begining
     ------------------------------------------------------ */
-    else if([37, 38, 39, 40].indexOf(e.keyCode) != -1){
-      changingFlag = false;
-      // console.log('current', this.page[index].selectionStart.offset, this.page[index].text.length)
-
-      /* ------------------------------------------------------
-        If keydown backward when cursor at begining
-      ------------------------------------------------------ */
-      if(e.keyCode === 37 && this.page[index].selectionStart.offset === 0){
-        if(index != 0){
-          e.preventDefault();
-          this.page[index].focus = false;
-          this.page[index - 1].focus = true;
-          this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: this.page[index - 1].text.length};
-        }
-      }
-
-      /* ------------------------------------------------------
-        If keydown forward when cursor at end
-      ------------------------------------------------------ */
-      else if(e.keyCode === 39 && this.page[index].selectionStart.offset === this.page[index].text.length){
-        if(index != this.page.length - 1){
-          e.preventDefault();
-          this.page[index].focus = false;
-          this.page[index + 1].focus = true;
-          this.page[index + 1].selectionStart = {line: 0, offset: 0};
-        }
-      }
-
-      /* ------------------------------------------------------
-        If keydown up
-      ------------------------------------------------------ */
-      else if(e.keyCode === 38 && this.page[index].selectionStart.line === 0){
-        if(index != 0){
-          e.preventDefault();
-          this.page[index].focus = false;
-          this.page[index - 1].focus = true;
-          // set cursor of prev paragraph relative to the first line of current paragraph
-          this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: 0}
-        }
-      }
-
-      /* ------------------------------------------------------
-        If keydown down
-      ------------------------------------------------------ */
-      else if(e.keyCode === 40 && this.page[index].selectionStart.line === this.page[index].line - 1){
-        if(index != this.page.length - 1){
-          e.preventDefault();
-          this.page[index].focus = false;
-          this.page[index + 1].focus = true;
-          // set cursor of next paragraph relative to the last line of current paragraph
-          this.page[index + 1].selectionStart = {line: 0, offset: 0}
-        }
+    else if(e.keyCode === 37 && this.paragraphs[index].selectionStart.offset === 0){
+      if(index != 0){
+        e.preventDefault();
+        this.paragraphs[index].focus = false;
+        this.paragraphs[index - 1].focus = true;
+        this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
       }
     }
 
+    /* ------------------------------------------------------
+      If keydown forward when cursor at end
+    ------------------------------------------------------ */
+    else if(e.keyCode === 39 && this.paragraphs[index].selectionStart.offset === this.paragraphs[index].text.length){
+      if(index != this.paragraphs.length - 1){
+        e.preventDefault();
+        this.paragraphs[index].focus = false;
+        this.paragraphs[index + 1].focus = true;
+        this.paragraphs[index + 1].selectionStart = {line: 0, offset: 0};
+      }
+    }
 
-    changingFlag ? this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value)) : '';
+    /* ------------------------------------------------------
+      If keydown up
+    ------------------------------------------------------ */
+    else if(e.keyCode === 38 && this.paragraphs[index].selectionStart.line === 0){
+      if(index != 0){
+        e.preventDefault();
+        this.paragraphs[index].focus = false;
+        this.paragraphs[index - 1].focus = true;
+        // set cursor of prev paragraph relative to the first line of current paragraph
+        this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: 0}
+      }
+    }
+
+    /* ------------------------------------------------------
+      If keydown down
+    ------------------------------------------------------ */
+    else if(e.keyCode === 40 && this.paragraphs[index].selectionStart.line === this.paragraphs[index].line - 1){
+      if(index != this.paragraphs.length - 1){
+        e.preventDefault();
+        this.paragraphs[index].focus = false;
+        this.paragraphs[index + 1].focus = true;
+        // set cursor of next paragraph relative to the last line of current paragraph
+        this.paragraphs[index + 1].selectionStart = {line: 0, offset: 0}
+      }
+    }
+
+    /* ------------------------------------------------------
+      Paragraphs do not need to reArranging into pages
+    ------------------------------------------------------ */
+    // TODOS...
+
+    /* ------------------------------------------------------
+      ReArranging Paragraphs into Pages
+    ------------------------------------------------------ */
+    if(changingFlag){
+      this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
+    }
   }
 
 } // End of mobx-script
 
-
+/* ------------------------------------------------------
+  div-contentEditable cursor position calculator
+  dealing with <b> <i> and so on...
+------------------------------------------------------ */
 function RecursionCounter(el){
   let textCount = 0;
   for(let node of el.childNodes){

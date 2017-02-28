@@ -63,6 +63,8 @@
 body
   padding: 0;
   background-color: rgb(136,136,136);
+  font: 12pt "courier final draft"
+
 
 * {
     box-sizing: border-box;
@@ -79,6 +81,7 @@ body
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1)
   text-align: center
 
+
 // .paragraph
 //   width: 100%
 
@@ -93,56 +96,76 @@ body
 .selectbox
   position: fixed
 
-textarea
+#paragraph
   border: none
-  width: 6.1in
+  // width: 6.1in
   height: calc(1px * var(--fontSize) + 2px)
-  font: 12pt "courier final draft"
+  // font: 12pt "courier final draft"
   display: block
-  margin: 0 auto
   padding: 0
-  text-align: left
+  &:empty:focus:before
+    content: attr(data-placeholder)
+    color: rgba(0,0,0,0.2)
 
-textarea:focus
+
+#paragraph:focus
   outline: none !important
   border: none
   box-shadow: 0 0 10px #719ECE
 
 .para-fadein
+  width: 6.1in
   text-transform: uppercase
   text-align: center
   font: 12pt "courier final draft bold"
-  margin-top: 20px
+  margin: 20px auto 0 auto
   &:focus
     box-shadow: 0 0 10px black
 
 .para-action
+  width: 6.1in
   // text-transform:capitalize
-  margin-top: 20px
+  margin: 20px auto 0 auto
+  text-align: left
 
 .para-scene
+  width: 6.1in
   text-transform: uppercase
   font: 12pt "courier final draft bold"
-  margin-top: 30px
+  margin: 30px auto 0 auto
+  text-align: left
+
 
 .para-character
+  width: 6.1in
   text-transform: uppercase
   text-align: center
   font: 12pt "courier final draft bold"
-  margin-top: 20px
+  margin: 20px auto 0 auto
+
 
 
 .para-dialogue
   width: 3.6in
+  margin: 0 auto
+  text-align: left
+
 
 .para-parenthetical
   width: 3.6in
+  margin: 0 auto
+  text-align: left
+
 
 .para-shot
+  width: 6.1in
   text-transform: uppercase
-  margin-top: 30px
+  margin: 30px auto 0 auto
+  text-align: left
+
 
 .para-transition
+  width: 6.1in
   text-transform: uppercase
+  margin: 20px auto 0 auto
   text-align: right
-  margin-top: 20px

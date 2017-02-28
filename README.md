@@ -8,7 +8,12 @@ It's usable now, but still under development... no electron/nedb yet
 
 open localhost:3000   
 
+**ENGLISH ONLY ! MAC ONLY !**
+
 ---
+Demo:
+
+Standard movie script format.
 
 ![DEMO](./demo.png)
 
@@ -23,7 +28,7 @@ Basic use: pretty much like Final Draft, short-cut:
 - ctrl+6: Transition
 - ctrl+7: Shot
 
-Print: command+p, you can print your script as PDF (optimization: US Letter)
+Print: command+p, you can print your script as PDF (CSS-optimization: US Letter)
 
 
 
@@ -31,10 +36,11 @@ Print: command+p, you can print your script as PDF (optimization: US Letter)
 
 
 *TODO:*
+- Maybe a little more prettier
 - Add saving
 - Add paragraph collections
 - Add script chart
-- Maybe use div-contentEditable instead of semantic-ui-Textarea, so it's pure react app with no third-party package
+- ~~Maybe use div-contentEditable instead of semantic-ui-Textarea, so it's pure react app with no third-party package~~  <= DONE
 - Add some test
 
 ---

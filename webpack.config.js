@@ -17,6 +17,11 @@ module.exports = {
     publicPath: '/static/'
   },
   plugins: [
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: JSON.stringify('production')
+      }
+    }),
     new ExtractTextPlugin("style.css"),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(),
@@ -51,9 +56,9 @@ module.exports = {
       }
   ]},
   devServer: {
-  host: 'localhost',
-  port: 3000,
-  historyApiFallback: true,
-  hot: true,
-},
+    host: 'localhost',
+    port: 3000,
+    historyApiFallback: true,
+    hot: true,
+  },
 };

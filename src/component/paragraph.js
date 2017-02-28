@@ -2,6 +2,30 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import ReactDOM from 'react-dom';
 
+function SetCaretPosition(el, offset){
+  for(let node of el.childNodes){
+    if(node.nodeType == 3){
+      if(node.length >= offset){
+        // stop here
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(node, offset);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        return -1;
+      }
+      offset -= node.length;
+    }else{
+      offset = SetCaretPosition(node, offset);
+      if(offset == -1){
+          return -1;
+      }
+    }
+  }
+  return offset;
+}
+
 @observer
 export default class Paragraph extends Component{
   componentDidMount(){
@@ -9,12 +33,7 @@ export default class Paragraph extends Component{
       ReactDOM.findDOMNode(this).focus();
       if(this.props.para.text){
         let el = ReactDOM.findDOMNode(this);
-        let range = document.createRange();
-        let sel = window.getSelection();
-        range.setStart(el.childNodes[this.props.para.selectionStart.line], this.props.para.selectionStart.offset);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        SetCaretPosition(el, this.props.para.selectionStart.offset);
       }
     }
   }
@@ -24,12 +43,7 @@ export default class Paragraph extends Component{
       ReactDOM.findDOMNode(this).focus();
       if(param.para.text){
         let el = ReactDOM.findDOMNode(this);
-        let range = document.createRange();
-        let sel = window.getSelection();
-        range.setStart(el.childNodes[param.para.selectionStart.line], param.para.selectionStart.offset);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        SetCaretPosition(el, param.para.selectionStart.offset);
       }
     }
   }

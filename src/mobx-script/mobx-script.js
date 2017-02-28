@@ -17,6 +17,7 @@ export default class mobxScript{
   // Paragraph margins
   @observable.ref Hdata = {'para-fadein': 20, 'para-action': 20, 'para-scene': 30, 'para-shot': 30, 'para-character': 20, 'para-dialogue': 0, 'para-parenthetical': 0, 'para-transition': 20};
 
+  @observable.ref lineCharNum = {'para-fadein': 61, 'para-action': 61, 'para-scene': 61, 'para-shot': 61, 'para-character': 61, 'para-dialogue':35, 'para-parenthetical': 35, 'para-transition': 61};
 
   // @observable cursor = 0;
   //
@@ -97,7 +98,7 @@ export default class mobxScript{
 
   ------------------------------------------------------ */
   @action handleSelect(e, index){
-    // console.log(e.target.value, index)
+    // console.log(e.target.value, index, e.keyCode)
 
     e.preventDefault();
     let className = e.target.value;
@@ -108,6 +109,7 @@ export default class mobxScript{
     this.page[index].text = this.page[index].innerHTML = (className === 'para-parenthetical' ? "()" : "");
     this.page[index].focus = true;
     this.page[index].selectionStart = (className === 'para-parenthetical' ? {line:0,offset:1} : {line:0,offset:0});
+    this.page[index].line = 1;
   }
 
 
@@ -117,38 +119,23 @@ export default class mobxScript{
 
   ------------------------------------------------------ */
   @action handleKey(e, index){
-    const targetClassName = e.target.className;
-    const targetInnerHTML = e.target.innerHTML;
-    const targetText = e.target.textContent;
-    const targetHeight = e.target.offsetHeight + this.Hdata[targetClassName];
+    const targetElement = e.target;
+    const targetId = targetElement.id;
+    const targetClassName = targetElement.className;
+    const targetInnerHTML = targetElement.innerHTML;
+    const targetText = targetElement.textContent;
+    const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
+
+    let newPara;
+    let changingFlag = true;
 
     /*
       compute cursor line and offset in current div-editable
     */
-    let range = window.getSelection().getRangeAt(0);
-    let selectedObj = window.getSelection();
-    // let rangeCount = 0;
-    if(selectedObj.anchorNode.parentNode === e.target){
-      let childNodes = selectedObj.anchorNode.parentNode.childNodes;
-      let line;
-      for (let i = 0; i < childNodes.length; i++) {
-        if (childNodes[i] == selectedObj.anchorNode) {
-          line = i;
-          break;
-        }
-        // if (childNodes[i].outerHTML)
-        //   rangeCount += childNodes[i].outerHTML.length;
-        // else if (childNodes[i].nodeType == 3) {
-        //   rangeCount += childNodes[i].textContent.length;
-        // }
-      }
-
-      // console.log('awesome!', line, childNodes)
-      this.page[index].selectionStart = {line: line, offset: range.startOffset};
+    if(targetId === 'paragraph'){
+      this.page[index].selectionStart.offset = RecursionCounter(targetElement)[0];
+      this.page[index].selectionStart.line = parseInt(this.page[index].selectionStart.offset / this.lineCharNum[targetClassName]);
     }
-
-    // console.log(e.target.getBoundingClientRect());
-    // console.log(e.target)
 
     /* ------------------------------------------------------
       calculate and update qurrent target height and line
@@ -159,14 +146,16 @@ export default class mobxScript{
       this.page[index].text = targetText;
 
       // updating line number
-      if(this.page[index].height != targetHeight){
-        this.page[index].height = targetHeight;
-        this.page[index].line = e.target.childNodes.length;
-      }
+      this.page[index].height = targetHeight;
+      this.page[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
     }
 
-    let newPara;
-    let changingFlag = true;
+    //// ======================     DEBUG HERE    ==========================================
+
+    // console.log(this.page[index].selectionStart.offset, this.page[index].text.length)
+    console.log(this.page[index].line, this.page[index].selectionStart.line)
+
+    //// ======================     DEBUG HERE    ==========================================
 
 
     /* ------------------------------------------------------
@@ -188,7 +177,7 @@ export default class mobxScript{
       ------------------------------------------------------ */
       if(this.page[index].innerHTML.length === 0){
         e.preventDefault();
-        const ClientRect = e.target.getBoundingClientRect();
+        const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
         this.selectbox.top += this.page[index].height;
@@ -238,7 +227,7 @@ export default class mobxScript{
       ------------------------------------------------------ */
       if(this.page[index].innerHTML.length === 0){
         e.preventDefault();
-        const ClientRect = e.target.getBoundingClientRect();
+        const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
         this.selectbox.top += this.page[index].height;
@@ -311,7 +300,7 @@ export default class mobxScript{
       e.preventDefault();
       if(index != 0){
         this.page[index - 1].focus = true;
-        this.page[index - 1].selectionStart = {line: this.page[index - 1].line, offset: this.page[index - 1].text.length};
+        this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: this.page[index - 1].text.length};
         this.page.splice(index, 1);
       }
     }
@@ -358,7 +347,7 @@ export default class mobxScript{
           this.page[index].focus = false;
           this.page[index - 1].focus = true;
           // set cursor of prev paragraph relative to the first line of current paragraph
-          this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: this.page[index - 1].text.length}
+          this.page[index - 1].selectionStart = {line: this.page[index - 1].line - 1, offset: 0}
         }
       }
 
@@ -377,7 +366,31 @@ export default class mobxScript{
     }
 
 
-    changingFlag ? this.pageSeperation_monitor(parseInt(e.target.attributes['data-pageNumber'].value)) : '';
+    changingFlag ? this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value)) : '';
   }
 
 } // End of mobx-script
+
+
+function RecursionCounter(el){
+  let textCount = 0;
+  for(let node of el.childNodes){
+    if(node.nodeType === 3){
+      let range = window.getSelection().getRangeAt(0);
+      let containerNode = range.startContainer;
+
+      if(containerNode === node){
+        textCount += range.startOffset;
+        return ([textCount, true]);
+      }
+      textCount += node.textContent.length;
+    }else{
+      let tmp = RecursionCounter(node);
+      textCount += tmp[0];
+      if(tmp[1]){
+        return ([textCount, true]);
+      }
+    }
+  }
+  return ([textCount, false]);
+}

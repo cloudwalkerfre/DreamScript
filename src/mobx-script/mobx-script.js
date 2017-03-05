@@ -1,17 +1,24 @@
-import { observable, action } from 'mobx';
+import { observable, action, computed, toJS } from 'mobx';
 
 /*
 
   This class maintain page and paragraph state for REACT to render, and handle all the related keypress function
 
 */
-export default class mobxScript{
+export default class scripts{
+  // script index for nedb, key is _id( script title )
+  @observable scripts = [];
+  // script title
+  @observable titlePage = {title: 'A script', author: 'cloudwalker', extra: 'this and that', contact: 'contact info:'}
   // Paragraph array
   @observable paragraphs = [];
   // Page iter_indicator, star to end
   @observable.struct pages = [];
+
+  @observable lastSave;
+
   // Paragraph selector
-  @observable selectbox = {};
+  @observable selectbox = {top:0, left:0,right:0, display: 'none'};
   // Paragraph type
   @observable.ref options =  ['para-scene', 'para-action','para-character','para-parenthetical','para-dialogue','para-transition','para-shot'];
   // Paragraph margins
@@ -32,23 +39,106 @@ export default class mobxScript{
   // @observable General = [];
 
 
-  constructor(){
-    // First line is always FADE IN:
-    this.paragraphs.push({type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
-    // Initialize first page
-    this.pages.push([0,0]);
-    // Initialize select box
-    this.selectbox = {top:0, left:0,right:0, display: 'none'};
+  constructor(db){
+    this.db = db;
+    db.find({}, (err, doc) => {
+      if(doc.length === 0){
+        // First line is always FADE IN:
+        this.paragraphs.push({type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
+        // Initialize first page
+        this.pages.push([0,0]);
+        // Init last save
+        this.lastSave = new Date().valueOf();
+        this.scripts.push({_id: this.lastSave, pages: toJS(this.lastSave, false), content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)});
+        db.insert(toJS(this.scripts[0], false));
+        // console.log('mobx init...', this.lastSave, this.scripts[0]._id)
+      }else{
+        doc.forEach(it => {
+          this.scripts.push({_id: it._id, pages: it.pages, titlePage: it.titlePage})
+        })
+      }
+    });
   }
 
+  /*
+    Script total text number
+  */
+  @computed get textCount(){
+    let textCounter = 0;
+    this.paragraphs.forEach(it => {
+      textCounter += it.text ? it.text.length : 0;
+    });
+    return textCounter;
+  }
 
-  // @computed get pageArray(){
-  //   return this.paragraphs;
-  // }
-  //
-  // @computed get pageIter(){
-  //   return this.pages;
-  // }
+  /*
+    Script total page number
+  */
+  @computed get pageNumber(){
+    return this.pages.length;
+  }
+
+  /*
+    Script total scene collection
+  */
+  @computed get sceneCount(){
+    let sceneCollection = [];
+    this.paragraphs.forEach(it => {
+      if(it.type === 'para-scene')
+        sceneCollection.push(it)
+    });
+    return sceneCollection;
+  }
+
+  /*
+    Script total character collection
+  */
+  @computed get characterCount(){
+    let characterCollection = [];
+    this.paragraphs.forEach(it => {
+      if(it.type === 'para-character')
+        characterCollection.push(it)
+    });
+    return characterCollection;
+  }
+
+  /* ------------------------------------------------------
+
+    Add a New Script
+
+  ------------------------------------------------------ */
+  @action addNewScript(){
+    this.titlePage = {title: 'NEW SCRIPT', author: 'AUTHOR', extra: 'EXTRA: this and that', contact: 'contact info:'};
+    this.paragraphs = [{type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1}];
+    this.pages = [[0,0]];
+    this.lastSave = new Date().valueOf();
+    this.scripts.push({_id: toJS(this.lastSave, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)});
+    this.db.insert({_id:toJS(this.lastSave, false), content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)}, err => {});
+  }
+
+  /* ------------------------------------------------------
+
+    Delete a Script
+
+  ------------------------------------------------------ */
+  @action deleteScript(i){
+    this.db.remove({_id:toJS(this.scripts[i]._id, false)}, {}, err => { if(err) console.log(err)});
+    this.scripts.splice(i, 1);
+  }
+  /* ------------------------------------------------------
+
+    Save Script
+
+  ------------------------------------------------------ */
+  @action saveScript(){
+    // console.log('saving....', toJS(this.titlePage))
+    // this.lastSave = new Date().valueOf();
+    this.db.update({_id: toJS(this.lastSave, false)}, {$set: {content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)}}, {}, (err) => {
+      if(err)console.log(err)
+      let st = this.scripts.findIndex((e) => {return e._id === this.lastSave});
+      this.scripts[st] = {_id: toJS(this.lastSave, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)};
+    })
+  }
 
   /* ------------------------------------------------------
 
@@ -56,7 +146,7 @@ export default class mobxScript{
 
   ------------------------------------------------------ */
   @action pageSeperation_monitor(current_page){
-      //go back one more page when counting
+      // go back one more page when counting
       current_page = (current_page === 0 ? 0 : current_page -- );
       // console.log(current_page, this.pages.length, this.pages[0][0])
 
@@ -102,6 +192,8 @@ export default class mobxScript{
       if(pageCount < pageNumOld){
         this.pages.splice(pageCount + 1);
       }
+
+      // console.log(toJS(this.paragraphs, false))
   };
 
   /* ------------------------------------------------------
@@ -131,11 +223,94 @@ export default class mobxScript{
     this.paragraphs[index].line = 1;
   }
 
+  /* ------------------------------------------------------
+
+    Save Title
+
+  ------------------------------------------------------ */
+  @action handleTitle(e){
+    // console.log(e.target.childNodes.forEach(it => {return it.className === 'title_title'}))
+    e.target.childNodes.forEach(node => {
+      // console.log(node, node.className, node.textContent)
+      switch (node.className) {
+        case 'title_title':
+          this.titlePage.title = node.textContent
+          break;
+        case 'title_author':
+          this.titlePage.author = node.textContent
+          break;
+        case 'title_extra':
+          this.titlePage.extra = node.textContent
+          break;
+        case 'title_contact':
+          this.titlePage.contact = node.textContent
+          break;
+      }
+    });
+  }
+
   /*
     disappearing the select box when scrolling
   */
   // @action handleScroll(){
   //   this.selectbox.display='none';
+  // }
+
+  // /* ------------------------------------------------------
+  //
+  //   Handle text; Need this if want to saving
+  //   Because, keyPress only save before the last char is put in
+  //
+  // ------------------------------------------------------ */
+  // @action handleText(e, index){
+  //   const targetElement = e.target;
+  //   const targetId = targetElement.id;
+  //   const targetClassName = targetElement.className;
+  //   const targetInnerHTML = targetElement.innerHTML;
+  //   const targetText = targetElement.textContent;
+  //   const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
+  //
+  //   // this determine if we reCalculate and reRender page
+  //   let changingFlag = true;
+  //
+  //   const paragraphLengthOld = this.paragraphs.length;
+  //   const paragraphHeightOld = this.paragraphs[index].height;
+  //
+  //   /* ------------------------------------------------------
+  //     compute cursor line and offset in current div-editable
+  //   ------------------------------------------------------ */
+  //   if(targetId === 'paragraph'){
+  //     this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
+  //     this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
+  //   }
+  //   /* ------------------------------------------------------
+  //     calculate and update qurrent target height and line
+  //   ------------------------------------------------------ */
+  //   if(targetInnerHTML != this.paragraphs[index].innerHTML){
+  //     // we need them both
+  //     this.paragraphs[index].innerHTML = targetInnerHTML;
+  //     this.paragraphs[index].text = targetText;
+  //     this.paragraphs[index].height = targetHeight;
+  //
+  //     // updating line number
+  //     this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
+  //   }
+  //
+  //   /* ------------------------------------------------------
+  //     Paragraphs do not need to reArranging into pages
+  //   ------------------------------------------------------ */
+  //   if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
+  //     changingFlag = false;
+  //   }
+  //
+  //
+  //   /* ------------------------------------------------------
+  //     ReArranging Paragraphs into Pages
+  //   ------------------------------------------------------ */
+  //   if(changingFlag){
+  //     this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
+  //   }
+  //
   // }
 
 
@@ -153,11 +328,20 @@ export default class mobxScript{
     const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
 
     let newPara;
+    // this determine if we reCalculate and reRender page
     let changingFlag = true;
 
-    /*
+    const paragraphLengthOld = this.paragraphs.length;
+    const paragraphHeightOld = this.paragraphs[index].height;
+
+
+    //// ================================================================================ ////
+    //// =============================== basic work below =============================== ////
+    //// ================================================================================ ////
+
+    /* ------------------------------------------------------
       compute cursor line and offset in current div-editable
-    */
+    ------------------------------------------------------ */
     if(targetId === 'paragraph'){
       this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
       this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
@@ -176,13 +360,19 @@ export default class mobxScript{
       this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
     }
 
-    //// ======================     DEBUG HERE    ========================================== ////
-
+    //// ===============================     DEBUG HERE    ========================================== ////
+    //
     // console.log(this.paragraphs[index].selectionStart.offset, this.paragraphs[index].text.length)
     // console.log(this.paragraphs[index].line, this.paragraphs[index].selectionStart.line)
+    // console.log(this.textCount);
+    // console.log(this.sceneCount);
+    //
+    //// ===============================     DEBUG HERE    ========================================== ////
 
-    //// ======================     DEBUG HERE    ========================================== ////
 
+    //// ================================================================================ ////
+    //// ====================== short-cut and paragraph logic below ===================== ////
+    //// ================================================================================ ////
 
     /* ------------------------------------------------------
       ctrl is bind fro mac, windows not considered... sorry
@@ -235,7 +425,7 @@ export default class mobxScript{
     }
 
     /* ------------------------------------------------------
-      If keydown Enter, logic goes this:
+      If keydown Enter, logic goes like this:
 
       FadeIn => new Scene
       Action => new Action
@@ -331,6 +521,10 @@ export default class mobxScript{
       }
     }
 
+    // else if(e.keyCode === 46){
+    //
+    // }
+
 
 
     /* ------------------------------------------------------
@@ -386,7 +580,10 @@ export default class mobxScript{
     /* ------------------------------------------------------
       Paragraphs do not need to reArranging into pages
     ------------------------------------------------------ */
-    // TODOS...
+    if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
+      changingFlag = false;
+    }
+
 
     /* ------------------------------------------------------
       ReArranging Paragraphs into Pages

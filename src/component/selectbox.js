@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
 import ReactDOM from 'react-dom';
 
-@inject('script') @observer
+ @observer
 export default class SelectBox extends Component{
   componentDidUpdate(param){
     if(param.script.selectbox.display === 'block' ){

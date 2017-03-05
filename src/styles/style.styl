@@ -7,6 +7,9 @@
     // body {
     //   margin-top: -1cm;
     // }
+    .script_tool{
+      display: none !important;
+    }
     .page {
         margin-top: 0;
         border: initial;
@@ -40,29 +43,29 @@
   font-style normal
   src url('./font-courier/Courier Final Draft Italic.ttf')
 
-@font-face
-  font-family 'courier new'
-  font-style normal
-  src url('./font-courier/Courier New.ttf')
-
-@font-face
-  font-family 'courier new bold'
-  font-style normal
-  src url('./font-courier/Courier New Bold.ttf')
-
-@font-face
-  font-family 'courier new italic'
-  font-style normal
-  src url('./font-courier/Courier New Italic font.ttf')
-
-@font-face
-  font-family 'courier new bold italic'
-  font-style normal
-  src url('./font-courier/Courier New Bold Italic font.ttf')
+// @font-face
+//   font-family 'courier new'
+//   font-style normal
+//   src url('./font-courier/Courier New.ttf')
+//
+// @font-face
+//   font-family 'courier new bold'
+//   font-style normal
+//   src url('./font-courier/Courier New Bold.ttf')
+//
+// @font-face
+//   font-family 'courier new italic'
+//   font-style normal
+//   src url('./font-courier/Courier New Italic font.ttf')
+//
+// @font-face
+//   font-family 'courier new bold italic'
+//   font-style normal
+//   src url('./font-courier/Courier New Bold Italic font.ttf')
 
 body
-  padding: 0;
-  background-color: rgb(136,136,136);
+  padding: 0
+  background-color: #d3d3d3
   font: 12pt "courier final draft"
 
 
@@ -71,6 +74,94 @@ body
     -moz-box-sizing: border-box;
 }
 
+.dashboard
+  // width: 100%
+  // height: 100%
+  overflow-y: auto
+  padding-bottom: 60px
+  background-color: #d3d3d3
+  // position: fixed
+  display: table-cell
+  top: 0
+  bottom: 0
+  right: 0
+  left: 0
+  :hover
+    cursor:pointer
+
+.scriptbox
+  background: white
+  width: 200px
+  height: 260px
+  padding: 10px
+  margin: 100px 60px 0 60px
+  text-align: center
+  display: inline-block
+  .script_time
+    font: 8pt "courier final draft"
+    margin-top: 30px
+  .script_author
+    margin-top: 60px
+    font: 10pt "courier final draft"
+  .script_extra
+    font: 9pt "courier final draft"
+    margin-top: 30px
+  .script_delete
+    border: 1px #D3D3D3 solid
+    width: 20px
+    height: 20px
+    text-align: center
+    border-radius: 20px
+    position: absolute
+    margin-top: -165px
+    margin-left: 170px
+    display:none
+  &:hover .script_delete
+    display: block
+
+.script_add_ico
+  margin-top: 135px
+
+.script_back
+  color: white
+  text-align: center
+  border: 1px solid white
+  width: 50px
+  height: 20px
+  position: fixed
+  margin: 10px 0 0 30px
+  box-shadow: 0 0 5px white
+  border-radius: 5px
+
+.script_back:hover
+  cursor:pointer
+
+.script_save
+  color: white
+  text-align: center
+  border: 1px solid white
+  width: 50px
+  height: 20px
+  position: fixed
+  margin: 50px 0 0 30px
+  box-shadow: 0 0 3px white
+  border-radius: 5px
+
+.script_save:hover
+  cursor:pointer
+
+// .script_delete
+//   border: 1px #D3D3D3 solid
+//   width: 20px
+//   height: 20px
+//   text-align: center
+//   border-radius: 20px
+//   position: relative
+//   margin-top: -165px
+//   margin-left: -150px
+//   display:none
+
+
 .page
   width: 8.5in
   height: 11.0in
@@ -78,8 +169,29 @@ body
   border: 1px #D3D3D3 solid
   border-radius: 5px
   background: white
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1)
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.1)
   text-align: center
+
+
+.title_title
+  margin-top: 300px
+  text-transform: uppercase
+  font: 18pt "courier final draft bold"
+
+.title_written
+  margin-top: 100px
+
+.title_author
+  margin-top: 20px
+
+.title_extra
+  margin-top: 100px
+
+.title_contact
+  margin-top: 150px
+  padding: 50px
+  text-align: left
+
 
 
 // .paragraph
@@ -138,7 +250,7 @@ body
 
 .para-scene
   width: 6.1in
-  text-transform: uppercase
+  // text-transform: uppercase
   font: 12pt "courier final draft bold"
   margin: 30px auto 0 auto
   text-align: left

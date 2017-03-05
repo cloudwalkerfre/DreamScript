@@ -1,14 +1,13 @@
-### A movie script writing tool (MAC only)
+### A movie script writing tool (MAC only & ENGLISH only )
 ---
 
 
-It's usable now, but still under development... no electron/nedb yet   
+It's usable now, but still under development... no `electron` yet   
 
     npm i && npm start  
 
 open localhost:3000   
 
-**ENGLISH ONLY ! MAC ONLY !**
 
 ---
 Demo:
@@ -37,10 +36,10 @@ Print: command+p, you can print your script as PDF (CSS-optimization: US Letter)
 
 *TODO:*
 - Maybe a little more prettier
-- Add saving
-- Add paragraph collections
-- Add script chart
-- ~~Maybe use div-contentEditable instead of semantic-ui-Textarea, so it's pure react app with no third-party package~~  <= DONE
+- ~~Add saving~~
+- ~~Add paragraph collections~~
+- ~~Add script chart~~
+- ~~Maybe use div-contentEditable instead of semantic-ui-Textarea, so it's pure react app with no third-party package~~
 - Add some test
 
 ---
@@ -55,14 +54,14 @@ Print: command+p, you can print your script as PDF (CSS-optimization: US Letter)
 ---
 
 **based-on**:  
-~~`electron`~~ `REACT` `mobx` ~~`nedb`~~
+~~`electron`~~ `REACT` `mobx` `nedb`
 
 ---
 
 **key component**:  
-- **page**: make a standard movie script looking, handling key-map shortcut function, like `cmd+1 => scene`, `cmd+5 => dialogue` and so on ...
+- **script**: make a standard movie script looking, handling key-map shortcut function, like `cmd+1 => scene`, `cmd+5 => dialogue` and so on ...
 - **paragraph**: `General`, `Scene Heading`, `Action`, `Character`, `Parenthetical`, `Dialogue`, `Transition`, `Shot`, `Cast List`
-- ~~**title page**~~
+- **title page**
 - ~~**tool sider**: open, save, new, convert ...~~
 - ~~**tool script**: collection of `Scene`, `Character`, `Shot`~~ ...
 

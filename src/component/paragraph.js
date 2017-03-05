@@ -52,6 +52,7 @@ export default class Paragraph extends Component{
   }
   render(){
     const para = this.props.para;
+    // const edit = this.props.edit;
 
     return (
         <div

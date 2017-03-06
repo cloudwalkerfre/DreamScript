@@ -97,15 +97,24 @@ body
   margin: 100px 60px 0 60px
   text-align: center
   display: inline-block
+  h3
+    text-transform: uppercase
+    font: 10pt "courier final draft bold"
+    height: 72px
+    overflow: hidden
   .script_time
     font: 8pt "courier final draft"
     margin-top: 30px
   .script_author
-    margin-top: 60px
+    overflow: hidden
+    margin-top: 20px
+    height: 42px
     font: 10pt "courier final draft"
   .script_extra
     font: 9pt "courier final draft"
     margin-top: 30px
+    height: 42px
+    overflow: hidden
   .script_delete
     border: 1px #D3D3D3 solid
     width: 20px
@@ -113,9 +122,10 @@ body
     text-align: center
     border-radius: 20px
     position: absolute
-    margin-top: -165px
-    margin-left: 170px
+    margin-top: -237px
+    margin-left: 177px
     display:none
+    background-color: white
   &:hover .script_delete
     display: block
 
@@ -132,9 +142,9 @@ body
   margin: 10px 0 0 30px
   box-shadow: 0 0 5px white
   border-radius: 5px
-
-.script_back:hover
-  cursor:pointer
+  background-color: rgba(87, 87, 87, 0.2)
+  &:hover
+    cursor:pointer
 
 .script_save
   color: white
@@ -146,9 +156,9 @@ body
   margin: 50px 0 0 30px
   box-shadow: 0 0 3px white
   border-radius: 5px
-
-.script_save:hover
-  cursor:pointer
+  background-color: rgba(87, 87, 87, 0.2)
+  &:hover
+    cursor:pointer
 
 // .script_delete
 //   border: 1px #D3D3D3 solid
@@ -177,20 +187,30 @@ body
   margin-top: 300px
   text-transform: uppercase
   font: 18pt "courier final draft bold"
+  // width: 6.1in
+  // display: inline-block
 
 .title_written
   margin-top: 100px
+  // width: 6.1in
+  // display: inline-block
 
 .title_author
   margin-top: 20px
+  // width: 6.1in
+  // display: inline-block
 
 .title_extra
   margin-top: 100px
+  // width: 6.1in
+  // display: inline-block
 
 .title_contact
   margin-top: 150px
   padding: 50px
   text-align: left
+  // width: 6.1in
+  // display: inline-block
 
 
 
@@ -272,7 +292,7 @@ body
 
 
 .para-parenthetical
-  width: 3.6in
+  width: 3.1in
   margin: 0 auto
   text-align: left
 

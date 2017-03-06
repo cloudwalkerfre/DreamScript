@@ -40,16 +40,11 @@ window.addEventListener('keydown',(e) => {
     MobxScript.handleKey(e, parseInt(e.target.attributes['data-unique'].value));
   }
 });
-window.addEventListener('keyup',(e) => {
-  if(e.target.className.indexOf('titlePage') != -1){
-    MobxScript.handleTitle(e);
-  }
-});
 // saving after char is putIn => keyUp instead of keyPress
 // otherwise the last input char will not be saved when pressing save button
 // but it's minor issue...
-// window.addEventListener('keyup',(e) => {
-//   if(e.target.id === 'paragraph'){
-//     MobxScript.handleText(e, parseInt(e.target.attributes['data-unique'].value));
-//   }
-// });
+window.addEventListener('keyup',(e) => {
+  if(e.target.id === 'paragraph'){
+    MobxScript.handleText(e, parseInt(e.target.attributes['data-unique'].value));
+  }
+});

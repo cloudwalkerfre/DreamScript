@@ -25,7 +25,7 @@ export default class scripts{
   @observable.ref Hdata = {'para-fadein': 20, 'para-action': 20, 'para-scene': 30, 'para-shot': 30, 'para-character': 20, 'para-dialogue': 0, 'para-parenthetical': 0, 'para-transition': 20};
   // char number in line of each type of paragraph, based on 12pt courier font family,
   // which is the standard font in movie script, so we really don't need the extra calculating work
-  @observable.ref lineCharNum = {'para-fadein': 61, 'para-action': 61, 'para-scene': 61, 'para-shot': 61, 'para-character': 61, 'para-dialogue':35, 'para-parenthetical': 35, 'para-transition': 61};
+  @observable.ref lineCharNum = {'para-fadein': 61, 'para-action': 61, 'para-scene': 61, 'para-shot': 61, 'para-character': 61, 'para-dialogue':35, 'para-parenthetical': 31, 'para-transition': 61};
 
   // @observable cursor = 0;
   //
@@ -204,7 +204,7 @@ export default class scripts{
       1. you press enter when your current paragraph is empty
       2. you make a short-cut call when your paragraph is empty
 
-    which means, empty graphs is not allowed, If you want blank space,
+    which means, empty graph is not allowed, If you want blank space,
     just type in space and leave it.
 
   ------------------------------------------------------ */
@@ -229,24 +229,20 @@ export default class scripts{
 
   ------------------------------------------------------ */
   @action handleTitle(e){
-    // console.log(e.target.childNodes.forEach(it => {return it.className === 'title_title'}))
-    e.target.childNodes.forEach(node => {
-      // console.log(node, node.className, node.textContent)
-      switch (node.className) {
-        case 'title_title':
-          this.titlePage.title = node.textContent
-          break;
-        case 'title_author':
-          this.titlePage.author = node.textContent
-          break;
-        case 'title_extra':
-          this.titlePage.extra = node.textContent
-          break;
-        case 'title_contact':
-          this.titlePage.contact = node.textContent
-          break;
-      }
-    });
+    switch (e.target.className) {
+      case 'title_title':
+        this.titlePage.title = e.target.innerHTML
+        break;
+      case 'title_author':
+        this.titlePage.author = e.target.innerHTML
+        break;
+      case 'title_extra':
+        this.titlePage.extra = e.target.innerHTML
+        break;
+      case 'title_contact':
+        this.titlePage.contact = e.target.innerHTML
+        break;
+    }
   }
 
   /*
@@ -256,62 +252,62 @@ export default class scripts{
   //   this.selectbox.display='none';
   // }
 
-  // /* ------------------------------------------------------
-  //
-  //   Handle text; Need this if want to saving
-  //   Because, keyPress only save before the last char is put in
-  //
-  // ------------------------------------------------------ */
-  // @action handleText(e, index){
-  //   const targetElement = e.target;
-  //   const targetId = targetElement.id;
-  //   const targetClassName = targetElement.className;
-  //   const targetInnerHTML = targetElement.innerHTML;
-  //   const targetText = targetElement.textContent;
-  //   const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
-  //
-  //   // this determine if we reCalculate and reRender page
-  //   let changingFlag = true;
-  //
-  //   const paragraphLengthOld = this.paragraphs.length;
-  //   const paragraphHeightOld = this.paragraphs[index].height;
-  //
-  //   /* ------------------------------------------------------
-  //     compute cursor line and offset in current div-editable
-  //   ------------------------------------------------------ */
-  //   if(targetId === 'paragraph'){
-  //     this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
-  //     this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
-  //   }
-  //   /* ------------------------------------------------------
-  //     calculate and update qurrent target height and line
-  //   ------------------------------------------------------ */
-  //   if(targetInnerHTML != this.paragraphs[index].innerHTML){
-  //     // we need them both
-  //     this.paragraphs[index].innerHTML = targetInnerHTML;
-  //     this.paragraphs[index].text = targetText;
-  //     this.paragraphs[index].height = targetHeight;
-  //
-  //     // updating line number
-  //     this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
-  //   }
-  //
-  //   /* ------------------------------------------------------
-  //     Paragraphs do not need to reArranging into pages
-  //   ------------------------------------------------------ */
-  //   if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
-  //     changingFlag = false;
-  //   }
-  //
-  //
-  //   /* ------------------------------------------------------
-  //     ReArranging Paragraphs into Pages
-  //   ------------------------------------------------------ */
-  //   if(changingFlag){
-  //     this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
-  //   }
-  //
-  // }
+  /* ------------------------------------------------------
+
+    Handle text; Need this if want to saving
+    Because, keyPress only save before the last char is put in
+
+  ------------------------------------------------------ */
+  @action handleText(e, index){
+    const targetElement = e.target;
+    const targetId = targetElement.id;
+    const targetClassName = targetElement.className;
+    const targetInnerHTML = targetElement.innerHTML;
+    const targetText = targetElement.textContent;
+    const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
+
+    // this determine if we reCalculate and reRender page
+    let changingFlag = true;
+
+    const paragraphLengthOld = this.paragraphs.length;
+    const paragraphHeightOld = this.paragraphs[index].height;
+
+    /* ------------------------------------------------------
+      compute cursor line and offset in current div-editable
+    ------------------------------------------------------ */
+    if(targetId === 'paragraph'){
+      this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
+      this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
+    }
+    /* ------------------------------------------------------
+      calculate and update qurrent target height and line
+    ------------------------------------------------------ */
+    if(targetInnerHTML != this.paragraphs[index].innerHTML){
+      // we need them both
+      this.paragraphs[index].innerHTML = targetInnerHTML;
+      this.paragraphs[index].text = targetText;
+      this.paragraphs[index].height = targetHeight;
+
+      // updating line number
+      this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
+    }
+
+    /* ------------------------------------------------------
+      Paragraphs do not need to reArranging into pages
+    ------------------------------------------------------ */
+    if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
+      changingFlag = false;
+    }
+
+
+    /* ------------------------------------------------------
+      ReArranging Paragraphs into Pages
+    ------------------------------------------------------ */
+    if(changingFlag){
+      this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
+    }
+
+  }
 
 
   /* ------------------------------------------------------

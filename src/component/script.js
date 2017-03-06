@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { inject, observer } from 'mobx-react';
-import {toJS} from 'mobx';
-import ReactDOM from 'react-dom';
 import { browserHistory } from 'react-router';
 
 
@@ -48,7 +46,7 @@ export default class Script extends Component{
           <div className='script_back' onClick={() => this.handleBack()}>back</div>
         </div>
 
-        <TitlePage titlePage={MobxScript.titlePage} />
+        <TitlePage script={MobxScript} />
         <SelectBox script={MobxScript}/>
 
         {MobxScript.pages.map( (pageIter, i) =>

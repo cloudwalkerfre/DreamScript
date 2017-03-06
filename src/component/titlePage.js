@@ -4,15 +4,15 @@ import { observer } from 'mobx-react';
 @observer
 export default class TitlePage extends Component{
   render(){
-    const {titlePage} = this.props;
+    const {script} = this.props;
     // console.log(titlePage)
     return (
-      <div contentEditable className='page titlePage'>
-        <div className='title_title'>{titlePage.title}</div>
-        <div className='title_written'>Written by</div>
-        <div className='title_author'>{titlePage.author}</div>
-        <div className='title_extra'>{titlePage.extra}</div>
-        <div className='title_contact'>{titlePage.contact}</div>
+      <div className='page titlePage' onBlur={(e) => script.handleTitle(e)}>
+        <div contentEditable className='title_title' dangerouslySetInnerHTML={{__html: script.titlePage.title || ""}} />
+        <div className='title_written' dangerouslySetInnerHTML={{__html: "Written by"}} />
+        <div contentEditable className='title_author' dangerouslySetInnerHTML={{__html: script.titlePage.author || ""}} />
+        <div contentEditable className='title_extra' dangerouslySetInnerHTML={{__html: script.titlePage.extra || ""}} />
+        <div contentEditable className='title_contact' dangerouslySetInnerHTML={{__html: script.titlePage.contact || ""}} />
       </div>
     )
   }

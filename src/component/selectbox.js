@@ -18,7 +18,7 @@ export default class SelectBox extends Component{
         className='selectbox'
         style={style}
         size={script.options.length}
-        onKeyPress={e => script.handleSelect(e, script.selectbox.index)}
+        onKeyPress={e => script.handleSelect(e)}
         onBlur={() => script.selectbox.display = 'none'}
         onScroll={() => script.selectbox.display = 'none'}
         defaultValue='para-action'

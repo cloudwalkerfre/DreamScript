@@ -9,6 +9,10 @@ import SelectBox from './selectbox'
 
 @inject('MobxScript') @observer
 export default class Script extends Component{
+
+  /*
+    Script get id from params(url), request the script's content from db
+  */
   constructor(props){
     super(props);
 
@@ -33,6 +37,7 @@ export default class Script extends Component{
   //   return false;
   // }
   handleBack(){
+    // save before leaving
     this.props.MobxScript.saveScript();
     browserHistory.replace('/');
   }
@@ -40,18 +45,23 @@ export default class Script extends Component{
   render(){
     const {MobxScript} = this.props;
     return (
-      <div className='script'>
+      <div
+        className='script'
+        onKeyUp={(e) => e.target.id === 'paragraph' ? MobxScript.handleText(e) : ''}
+        onKeyDown={(e) => e.target.id === 'paragraph' ? MobxScript.handleKey(e) : ''}
+        >
+
         <div className='script_tool'>
           <div className='script_save' onClick={() => MobxScript.saveScript()}>save</div>
           <div className='script_back' onClick={() => this.handleBack()}>back</div>
         </div>
 
+        <SelectBox script={MobxScript} />
         <TitlePage script={MobxScript} />
-        <SelectBox script={MobxScript}/>
 
         {MobxScript.pages.map( (pageIter, i) =>
-          <Page key={i} pageIter={pageIter} pageNumber={i} script={MobxScript}/>
-       )}
+          <Page key={i} pageIter={pageIter} pageNumber={i} script={MobxScript} />
+        )}
       </div>
     )
   }

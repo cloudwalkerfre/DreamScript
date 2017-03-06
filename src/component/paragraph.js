@@ -2,32 +2,6 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import ReactDOM from 'react-dom';
 
-/*
-  Find and place cursor in div-editable
-*/
-function SetCaretPosition(el, offset){
-  for(let node of el.childNodes){
-    if(node.nodeType == 3){
-      if(node.length >= offset){
-        // stop here
-        let range = document.createRange();
-        let sel = window.getSelection();
-        range.setStart(node, offset);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-        return -1;
-      }
-      offset -= node.length;
-    }else{
-      offset = SetCaretPosition(node, offset);
-      if(offset == -1){
-          return -1;
-      }
-    }
-  }
-  return offset;
-}
 
 @observer
 export default class Paragraph extends Component{
@@ -50,6 +24,12 @@ export default class Paragraph extends Component{
       }
     }
   }
+  handlePaste(e){
+    e.preventDefault();
+    let parser = new DOMParser();
+    let tmp = parser.parseFromString(e.clipboardData.getData('text/html'), "text/xml");
+    console.log(e.clipboardData.getData('text/html'), tmp.querySelector('body'))
+  }
   render(){
     const para = this.props.para;
     // const edit = this.props.edit;
@@ -62,6 +42,7 @@ export default class Paragraph extends Component{
           id={'paragraph'}
           onBlur={() => para.focus = false}
           onFocus={() => para.focus = true}
+          // onPaste={(e) => this.handlePaste(e)}
           dangerouslySetInnerHTML={{__html: para.innerHTML || ""}}
           data-placeholder={para.type.slice(5)}
           ref={para.focus}
@@ -70,4 +51,31 @@ export default class Paragraph extends Component{
         />
     )
   }
+}
+
+/*
+Find and place cursor in div-editable
+*/
+function SetCaretPosition(el, offset){
+  for(let node of el.childNodes){
+    if(node.nodeType == 3){
+      if(node.length >= offset){
+        // stop here
+        let range = document.createRange();
+        let sel = window.getSelection();
+        range.setStart(node, offset);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        return -1;
+      }
+      offset -= node.length;
+    }else{
+      offset = SetCaretPosition(node, offset);
+      if(offset == -1){
+        return -1;
+      }
+    }
+  }
+  return offset;
 }

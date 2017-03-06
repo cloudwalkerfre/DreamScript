@@ -14,7 +14,8 @@ export default class scripts{
   @observable paragraphs = [];
   // Page iter_indicator, star to end
   @observable.struct pages = [];
-
+  // time_stamp of script's create, using as _id of db,
+  // could be updated when script is saved, but nedb did not allow _id to change, thus currently only use as uid of the script
   @observable lastSave;
 
   // Paragraph selector
@@ -39,16 +40,23 @@ export default class scripts{
   // @observable General = [];
 
 
+  /*
+    when init, checking if db is empty
+    if so, create a empty template script
+    if not, load the scripts from db
+  */
   constructor(db){
     this.db = db;
+
     db.find({}, (err, doc) => {
       if(doc.length === 0){
         // First line is always FADE IN:
         this.paragraphs.push({type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1});
         // Initialize first page
         this.pages.push([0,0]);
-        // Init last save
-        this.lastSave = new Date().valueOf();
+        // Init create time as uid
+        this.lastSave = Date.now();
+        // pushing the new script to both SCRIPTS and DB
         this.scripts.push({_id: this.lastSave, pages: toJS(this.lastSave, false), content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)});
         db.insert(toJS(this.scripts[0], false));
         // console.log('mobx init...', this.lastSave, this.scripts[0]._id)
@@ -111,7 +119,7 @@ export default class scripts{
     this.titlePage = {title: 'NEW SCRIPT', author: 'AUTHOR', extra: 'EXTRA: this and that', contact: 'contact info:'};
     this.paragraphs = [{type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1}];
     this.pages = [[0,0]];
-    this.lastSave = new Date().valueOf();
+    this.lastSave = Date.now();
     this.scripts.push({_id: toJS(this.lastSave, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)});
     this.db.insert({_id:toJS(this.lastSave, false), content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)}, err => {});
   }
@@ -132,7 +140,7 @@ export default class scripts{
   ------------------------------------------------------ */
   @action saveScript(){
     // console.log('saving....', toJS(this.titlePage))
-    // this.lastSave = new Date().valueOf();
+    // this.lastSave = Date.now();
     this.db.update({_id: toJS(this.lastSave, false)}, {$set: {content: toJS(this.paragraphs, false), pages: toJS(this.pages, false), titlePage: toJS(this.titlePage, false)}}, {}, (err) => {
       if(err)console.log(err)
       let st = this.scripts.findIndex((e) => {return e._id === this.lastSave});
@@ -158,6 +166,7 @@ export default class scripts{
       let pageNumOld = this.pages.length;
       const paraLength = this.paragraphs.length;
 
+      // console.log(Iter)
       /*
         How to maintain the certain height of script is join effort of both
         software and writer's personal preference, because it's the type of
@@ -168,32 +177,13 @@ export default class scripts{
       for(;Iter < paraLength; ){
         height += this.paragraphs[Iter].height;
         // console.log(height)
-        // if(height > 920 && height < 980){
-        //   this.pages[pageCount] = [flag, Iter];
-        //   height = 0;
-        //   pageCount++;
-        //   flag = Iter;
-        //
-        //   this.pages[pageCount] = [flag, 0];
-        //   // console.log(pageCount)
-        // }
-        //
-        // else if(height >= 980){
-        //   // stay where you are
-        //   this.pages[pageCount] = [flag, --Iter];
-        //   height = 0;
-        //   pageCount++;
-        //   flag = Iter;
-        //
-        //   this.pages[pageCount] = [flag, 0];
-        //   // console.log(pageCount)
-        // }
-        if(height >= 950){
+        if(height >= 920){
+          // console.log(height, Iter)
           // stay where you are
-          this.pages[pageCount] = [flag, --Iter];
+          this.pages[pageCount] = [flag, Iter - 1];
           height = 0;
           pageCount++;
-          flag = Iter;
+          flag = Iter - 1;
 
           this.pages[pageCount] = [flag, 0];
           // console.log(pageCount)
@@ -220,11 +210,11 @@ export default class scripts{
     just type in space and leave it.
 
   ------------------------------------------------------ */
-  @action handleSelect(e, index){
-    // console.log(e.target.value, index, e.keyCode)
-
+  @action handleSelect(e){
     e.preventDefault();
+
     let className = e.target.value;
+    const index = this.selectbox.index;
     this.selectbox.display='none';
 
     this.paragraphs[index].type = className;
@@ -270,8 +260,9 @@ export default class scripts{
     Because, keyPress only save before the last char is put in
 
   ------------------------------------------------------ */
-  @action handleText(e, index){
+  @action handleText(e){
     const targetElement = e.target;
+    const index = parseInt(targetElement.attributes['data-unique'].value)
     const targetId = targetElement.id;
     const targetClassName = targetElement.className;
     const targetInnerHTML = targetElement.innerHTML;
@@ -327,8 +318,9 @@ export default class scripts{
     short-cut setting stuff...
 
   ------------------------------------------------------ */
-  @action handleKey(e, index){
+  @action handleKey(e){
     const targetElement = e.target;
+    const index = parseInt(targetElement.attributes['data-unique'].value)
     const targetId = targetElement.id;
     const targetClassName = targetElement.className;
     const targetInnerHTML = targetElement.innerHTML;

@@ -29,7 +29,7 @@ export default class Script extends Component{
     }
 
     return (
-      <div className='page'>
+      <div className='dreamScriptPage'>
         <span className='pageNumber'>
           {pageNumber + 1}.
         </span>

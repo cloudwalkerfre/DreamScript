@@ -31,20 +31,3 @@ ReactDOM.render(routes, document.querySelector('#root'));
 function getDatabasePath(name){
   return path.join(__dirname, 'data', name + '.db');
 }
-
-// window.addEventListener('scroll', () => {
-//   script.handleScroll();
-// })
-window.addEventListener('keydown',(e) => {
-  if(e.target.id === 'paragraph'){
-    MobxScript.handleKey(e, parseInt(e.target.attributes['data-unique'].value));
-  }
-});
-// saving after char is putIn => keyUp instead of keyPress
-// otherwise the last input char will not be saved when pressing save button
-// but it's minor issue...
-window.addEventListener('keyup',(e) => {
-  if(e.target.id === 'paragraph'){
-    MobxScript.handleText(e, parseInt(e.target.attributes['data-unique'].value));
-  }
-});

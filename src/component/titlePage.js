@@ -7,7 +7,7 @@ export default class TitlePage extends Component{
     const {script} = this.props;
     // console.log(titlePage)
     return (
-      <div className='page titlePage' onBlur={(e) => script.handleTitle(e)}>
+      <div className='dreamScriptPage titlePage' onBlur={(e) => script.handleTitle(e)}>
         <div contentEditable className='title_title' dangerouslySetInnerHTML={{__html: script.titlePage.title || ""}} />
         <div className='title_written' dangerouslySetInnerHTML={{__html: "Written by"}} />
         <div contentEditable className='title_author' dangerouslySetInnerHTML={{__html: script.titlePage.author || ""}} />

@@ -165,20 +165,30 @@ export default class scripts{
         So, if you want to keep it short, just type in empty graphs with space.
         I leave the most area that you can work with.
       */
-      for(;Iter < paraLength; Iter++){
+      for(;Iter < paraLength; ){
         height += this.paragraphs[Iter].height;
         // console.log(height)
-        if(height > 920 && height < 980){
-          this.pages[pageCount] = [flag, Iter];
-          height = 0;
-          pageCount++;
-          flag = Iter;
-
-          this.pages[pageCount] = [flag, 0];
-          // console.log(pageCount)
-        }
-
-        else if(height >= 980){
+        // if(height > 920 && height < 980){
+        //   this.pages[pageCount] = [flag, Iter];
+        //   height = 0;
+        //   pageCount++;
+        //   flag = Iter;
+        //
+        //   this.pages[pageCount] = [flag, 0];
+        //   // console.log(pageCount)
+        // }
+        //
+        // else if(height >= 980){
+        //   // stay where you are
+        //   this.pages[pageCount] = [flag, --Iter];
+        //   height = 0;
+        //   pageCount++;
+        //   flag = Iter;
+        //
+        //   this.pages[pageCount] = [flag, 0];
+        //   // console.log(pageCount)
+        // }
+        if(height >= 950){
           // stay where you are
           this.pages[pageCount] = [flag, --Iter];
           height = 0;
@@ -187,6 +197,8 @@ export default class scripts{
 
           this.pages[pageCount] = [flag, 0];
           // console.log(pageCount)
+        }else {
+          Iter++;
         }
       }
       if(pageCount < pageNumOld){

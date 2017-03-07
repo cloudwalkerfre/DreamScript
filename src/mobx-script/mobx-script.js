@@ -1,4 +1,5 @@
 import { observable, action, computed, toJS } from 'mobx';
+import util from './util'
 
 /*
 
@@ -269,7 +270,7 @@ export default class scripts{
     const targetInnerHTML = targetElement.innerHTML || '';
     const targetText = targetElement.textContent || '';
     const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
-    const targetOffSet = RecursionCounter(targetElement)[0];
+    const targetOffSet = util.RecursionCounter(targetElement)[0];
     const targetLineOffSet = parseInt(targetOffSet / this.lineCharNum[targetClassName]);
     const targetLine = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
 
@@ -279,8 +280,7 @@ export default class scripts{
     /* ------------------------------------------------------
       compute cursor line and offset in current div-editable
     ------------------------------------------------------ */
-    this.paragraphs[index].selectionStart.offset = targetOffSet;
-    this.paragraphs[index].selectionStart.line = targetLineOffSet;
+    this.paragraphs[index].selectionStart = {line:targetLineOffSet, offset: targetOffSet};
 
     /* ------------------------------------------------------
       calculate and update qurrent target height and line
@@ -307,13 +307,19 @@ export default class scripts{
 
   ------------------------------------------------------ */
   @action handleKey(e){
+    // target mac, sorry windows...
+    // do not care if not paste or new line
+    if(e.metaKey && e.keyCode != 13 && e.keyCode != 86){
+      return;
+    }
+
     const targetElement = e.target;
     const index = parseInt(targetElement.attributes['data-unique'].value)
     const targetClassName = targetElement.className;
     const targetInnerHTML = targetElement.innerHTML || '';
     const targetText = targetElement.textContent || '';
     const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
-    const targetOffSet = RecursionCounter(targetElement)[0];
+    const targetOffSet = util.RecursionCounter(targetElement)[0];
     const targetLineOffSet = parseInt(targetOffSet / this.lineCharNum[targetClassName]);
     const targetLine = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
 
@@ -330,6 +336,7 @@ export default class scripts{
       this.paragraphs[index].line = targetLine;
       this.paragraphs[index].innerHTML = targetInnerHTML;
       this.paragraphs[index].text = targetText;
+      this.paragraphs[index].selectionStart = {line:targetLineOffSet, offset: targetOffSet};
     }
 
     //// ===============================     DEBUG HERE    ========================================== ////
@@ -493,23 +500,26 @@ export default class scripts{
     }
 
     /* ------------------------------------------------------
-      If keydown delete at begining when prev paragraph is empty
+      If keydown delete at begining when prev paragraph is empty && !isSelected
     ------------------------------------------------------ */
-    else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && !this.paragraphs[index - 1].innerHTML && targetInnerHTML){
+    else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && !this.paragraphs[index - 1].innerHTML && targetInnerHTML && !util.isSelected()){
       e.preventDefault();
       this.paragraphs.splice(index - 1, 1);
     }
 
     // /* ------------------------------------------------------
     //   If keydown delete at begining when prev paragraph is not empty
-    //     !!! THERE'S SOME ISSUE WITH THIS -> (targetOffSet === 0) alone can not deside if it's select all !!!
     // ------------------------------------------------------ */
-    // else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && this.paragraphs[index - 1].innerHTML && targetInnerHTML){
-    //   e.preventDefault();
-    //   this.paragraphs[index].focus = false;
-    //   this.paragraphs[index - 1].focus = true;
-    //   this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
-    // }
+    else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && this.paragraphs[index - 1].innerHTML && targetInnerHTML){
+      e.preventDefault();
+      if(util.isSelected()){
+        util.deleteContent();
+      }else{
+        this.paragraphs[index].focus = false;
+        this.paragraphs[index - 1].focus = true;
+        this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
+      }
+    }
 
     /* ------------------------------------------------------
       If keydown backward when cursor at begining
@@ -571,30 +581,3 @@ export default class scripts{
   }
 
 } // End of mobx-script
-
-/* ------------------------------------------------------
-  div-contentEditable cursor position calculator
-  dealing with <b> <i> and so on...
------------------------------------------------------- */
-function RecursionCounter(el){
-  let textCount = 0;
-  for(let node of el.childNodes){
-    if(node.nodeType === 3){
-      let range = window.getSelection().getRangeAt(0);
-      let containerNode = range.startContainer;
-
-      if(containerNode === node){
-        textCount += range.startOffset;
-        return ([textCount, true]);
-      }
-      textCount += node.textContent.length;
-    }else{
-      let tmp = RecursionCounter(node);
-      textCount += tmp[0];
-      if(tmp[1]){
-        return ([textCount, true]);
-      }
-    }
-  }
-  return ([textCount, false]);
-}

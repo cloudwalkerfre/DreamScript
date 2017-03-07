@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import ReactDOM from 'react-dom';
+import util from '../mobx-script/util'
 
 
 @observer
@@ -9,7 +10,7 @@ export default class Paragraph extends Component{
     if(this.props.para.focus){
       ReactDOM.findDOMNode(this).focus();
       if(this.props.para.text){
-        SetCaretPosition(ReactDOM.findDOMNode(this), this.props.para.selectionStart.offset);
+        util.SetCaretPosition(ReactDOM.findDOMNode(this), this.props.para.selectionStart.offset);
       }
     }
   }
@@ -18,25 +19,29 @@ export default class Paragraph extends Component{
     if(this.refs.true){
       ReactDOM.findDOMNode(this).focus();
       if(param.para.text){
-        SetCaretPosition(ReactDOM.findDOMNode(this), param.para.selectionStart.offset);
+        util.SetCaretPosition(ReactDOM.findDOMNode(this), param.para.selectionStart.offset);
       }
     }
   }
   handlePaste(e){
     e.preventDefault();
-    let copyStuff = e.clipboardData.getData('Text');
-    let currentOffSet = RecursionCounter(e.target)[0];
+    // console.log('pasting!')
 
-    this.props.para.selectionStart.offset = currentOffSet + copyStuff.length;
-    console.log(this.props.para.selectionStart.offset)
+    // incase there is a selection need to be replaced
+    util.deleteContent();
 
-    let tmpHead = e.target.innerHTML.slice(0, currentOffSet);
-    let tmpTail = e.target.innerHTML.slice(currentOffSet);
-    this.props.para.innerHTML = tmpHead.concat(copyStuff,tmpTail);
+    // clipboard only take palin text
+    let copyStuff = e.clipboardData.getData('text/plain');
+    let tmpOffSet = util.RecursionCounter(e.target)[0];
 
+    let tmpHead = e.target.innerHTML.slice(0, tmpOffSet);
+    let tmpTail = e.target.innerHTML.slice(tmpOffSet);
 
-    // e.target.innerHTML = this.props.para.innerHTML;
-    // SetCaretPosition(ReactDOM.findDOMNode(this), this.props.para.selectionStart.offset);
+    // this.props.para.selectionStart.offset = tmpOffSet + copyStuff.length;
+    e.target.innerHTML = tmpHead.concat(copyStuff,tmpTail);
+
+    // update cursor after paste
+    util.SetCaretPosition(e.target, tmpOffSet + copyStuff.length);
   }
   render(){
     const para = this.props.para;
@@ -50,7 +55,7 @@ export default class Paragraph extends Component{
           id={'paragraph'}
           onBlur={() => para.focus = false}
           onFocus={() => para.focus = true}
-          // onPaste={(e) => this.handlePaste(e)}
+          onPaste={(e) => this.handlePaste(e)}
           dangerouslySetInnerHTML={{__html: para.innerHTML || ""}}
           data-placeholder={para.type.slice(5)}
           ref={para.focus}
@@ -59,59 +64,4 @@ export default class Paragraph extends Component{
         />
     )
   }
-}
-
-/*
-Find and place cursor in div-editable
-*/
-function SetCaretPosition(el, offset){
-  for(let node of el.childNodes){
-    if(node.nodeType == 3){
-      if(node.length >= offset){
-        // stop here
-        let range = document.createRange();
-        let sel = window.getSelection();
-        range.setStart(node, offset);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-        return -1;
-      }
-      offset -= node.length;
-    }else{
-      offset = SetCaretPosition(node, offset);
-      if(offset == -1){
-        return -1;
-      }
-    }
-  }
-  return offset;
-}
-
-
-/* ------------------------------------------------------
-  div-contentEditable cursor position calculator
-  dealing with <b> <i> and so on...
------------------------------------------------------- */
-function RecursionCounter(el){
-  let textCount = 0;
-  for(let node of el.childNodes){
-    if(node.nodeType === 3){
-      let range = window.getSelection().getRangeAt(0);
-      let containerNode = range.startContainer;
-
-      if(containerNode === node){
-        textCount += range.startOffset;
-        return ([textCount, true]);
-      }
-      textCount += node.textContent.length;
-    }else{
-      let tmp = RecursionCounter(node);
-      textCount += tmp[0];
-      if(tmp[1]){
-        return ([textCount, true]);
-      }
-    }
-  }
-  return ([textCount, false]);
 }

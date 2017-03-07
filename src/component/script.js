@@ -47,8 +47,9 @@ export default class Script extends Component{
     return (
       <div
         className='script'
-        onKeyUp={(e) => e.target.id === 'paragraph' ? MobxScript.handleText(e) : ''}
+        // onKeyUp={(e) => e.target.id === 'paragraph' ? MobxScript.handleText(e) : ''}
         onKeyDown={(e) => e.target.id === 'paragraph' ? MobxScript.handleKey(e) : ''}
+        onBlur={(e) => e.target.id === 'paragraph' ? MobxScript.handleBlur(e) : ''}
         >
 
         <div className='script_tool'>

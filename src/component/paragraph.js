@@ -9,26 +9,34 @@ export default class Paragraph extends Component{
     if(this.props.para.focus){
       ReactDOM.findDOMNode(this).focus();
       if(this.props.para.text){
-        let el = ReactDOM.findDOMNode(this);
-        SetCaretPosition(el, this.props.para.selectionStart.offset);
+        SetCaretPosition(ReactDOM.findDOMNode(this), this.props.para.selectionStart.offset);
       }
     }
   }
   componentDidUpdate(param){
-    // console.log(param.unique, 'updated');
+    // console.log(param.unique, 'updated', param.para.selectionStart.offset);
     if(this.refs.true){
       ReactDOM.findDOMNode(this).focus();
       if(param.para.text){
-        let el = ReactDOM.findDOMNode(this);
-        SetCaretPosition(el, param.para.selectionStart.offset);
+        SetCaretPosition(ReactDOM.findDOMNode(this), param.para.selectionStart.offset);
       }
     }
   }
   handlePaste(e){
     e.preventDefault();
-    let parser = new DOMParser();
-    let tmp = parser.parseFromString(e.clipboardData.getData('text/html'), "text/xml");
-    console.log(e.clipboardData.getData('text/html'), tmp.querySelector('body'))
+    let copyStuff = e.clipboardData.getData('Text');
+    let currentOffSet = RecursionCounter(e.target)[0];
+
+    this.props.para.selectionStart.offset = currentOffSet + copyStuff.length;
+    console.log(this.props.para.selectionStart.offset)
+
+    let tmpHead = e.target.innerHTML.slice(0, currentOffSet);
+    let tmpTail = e.target.innerHTML.slice(currentOffSet);
+    this.props.para.innerHTML = tmpHead.concat(copyStuff,tmpTail);
+
+
+    // e.target.innerHTML = this.props.para.innerHTML;
+    // SetCaretPosition(ReactDOM.findDOMNode(this), this.props.para.selectionStart.offset);
   }
   render(){
     const para = this.props.para;
@@ -78,4 +86,32 @@ function SetCaretPosition(el, offset){
     }
   }
   return offset;
+}
+
+
+/* ------------------------------------------------------
+  div-contentEditable cursor position calculator
+  dealing with <b> <i> and so on...
+------------------------------------------------------ */
+function RecursionCounter(el){
+  let textCount = 0;
+  for(let node of el.childNodes){
+    if(node.nodeType === 3){
+      let range = window.getSelection().getRangeAt(0);
+      let containerNode = range.startContainer;
+
+      if(containerNode === node){
+        textCount += range.startOffset;
+        return ([textCount, true]);
+      }
+      textCount += node.textContent.length;
+    }else{
+      let tmp = RecursionCounter(node);
+      textCount += tmp[0];
+      if(tmp[1]){
+        return ([textCount, true]);
+      }
+    }
+  }
+  return ([textCount, false]);
 }

@@ -40,11 +40,14 @@ export default class scripts{
   // @observable General = [];
 
 
-  /*
+
+  /* ------------------------------------------------------
+
     when init, checking if db is empty
     if so, create a empty template script
     if not, load the scripts from db
-  */
+
+  ------------------------------------------------------ */
   constructor(db){
     this.db = db;
 
@@ -166,7 +169,7 @@ export default class scripts{
       let pageNumOld = this.pages.length;
       const paraLength = this.paragraphs.length;
 
-      // console.log(Iter)
+      // console.log('page seperate iter:', Iter)
       /*
         How to maintain the certain height of script is join effort of both
         software and writer's personal preference, because it's the type of
@@ -177,13 +180,13 @@ export default class scripts{
       for(;Iter < paraLength; ){
         height += this.paragraphs[Iter].height;
         // console.log(height)
-        if(height >= 920){
+        if(height >= 950){
           // console.log(height, Iter)
           // stay where you are
-          this.pages[pageCount] = [flag, Iter - 1];
+          this.pages[pageCount] = [flag, Iter];
           height = 0;
           pageCount++;
-          flag = Iter - 1;
+          flag = Iter;
 
           this.pages[pageCount] = [flag, 0];
           // console.log(pageCount)
@@ -256,21 +259,19 @@ export default class scripts{
 
   /* ------------------------------------------------------
 
-    Handle text; Need this if want to saving
-    Because, keyPress only save before the last char is put in
+    Handle blur of paragraph, text will be saved, and page will be reCalculated if needed
 
   ------------------------------------------------------ */
-  @action handleText(e){
+  @action handleBlur(e){
     const targetElement = e.target;
     const index = parseInt(targetElement.attributes['data-unique'].value)
-    const targetId = targetElement.id;
     const targetClassName = targetElement.className;
-    const targetInnerHTML = targetElement.innerHTML;
-    const targetText = targetElement.textContent;
+    const targetInnerHTML = targetElement.innerHTML || '';
+    const targetText = targetElement.textContent || '';
     const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
-
-    // this determine if we reCalculate and reRender page
-    let changingFlag = true;
+    const targetOffSet = RecursionCounter(targetElement)[0];
+    const targetLineOffSet = parseInt(targetOffSet / this.lineCharNum[targetClassName]);
+    const targetLine = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
 
     const paragraphLengthOld = this.paragraphs.length;
     const paragraphHeightOld = this.paragraphs[index].height;
@@ -278,86 +279,57 @@ export default class scripts{
     /* ------------------------------------------------------
       compute cursor line and offset in current div-editable
     ------------------------------------------------------ */
-    if(targetId === 'paragraph'){
-      this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
-      this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
-    }
+    this.paragraphs[index].selectionStart.offset = targetOffSet;
+    this.paragraphs[index].selectionStart.line = targetLineOffSet;
+
     /* ------------------------------------------------------
       calculate and update qurrent target height and line
     ------------------------------------------------------ */
     if(targetInnerHTML != this.paragraphs[index].innerHTML){
-      // we need them both
       this.paragraphs[index].innerHTML = targetInnerHTML;
       this.paragraphs[index].text = targetText;
       this.paragraphs[index].height = targetHeight;
-
-      // updating line number
-      this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
+      this.paragraphs[index].line = targetLine;
     }
-
-    /* ------------------------------------------------------
-      Paragraphs do not need to reArranging into pages
-    ------------------------------------------------------ */
-    if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
-      changingFlag = false;
-    }
-
 
     /* ------------------------------------------------------
       ReArranging Paragraphs into Pages
     ------------------------------------------------------ */
-    if(changingFlag){
+    if(this.paragraphs.length != paragraphLengthOld || targetHeight != paragraphHeightOld){
       this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
     }
 
   }
 
-
   /* ------------------------------------------------------
 
-    short-cut setting stuff...
+    short-cut setting stuff... Listen to KeyPress
 
   ------------------------------------------------------ */
   @action handleKey(e){
     const targetElement = e.target;
     const index = parseInt(targetElement.attributes['data-unique'].value)
-    const targetId = targetElement.id;
     const targetClassName = targetElement.className;
-    const targetInnerHTML = targetElement.innerHTML;
-    const targetText = targetElement.textContent;
+    const targetInnerHTML = targetElement.innerHTML || '';
+    const targetText = targetElement.textContent || '';
     const targetHeight = targetElement.offsetHeight + this.Hdata[targetClassName];
+    const targetOffSet = RecursionCounter(targetElement)[0];
+    const targetLineOffSet = parseInt(targetOffSet / this.lineCharNum[targetClassName]);
+    const targetLine = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
 
     let newPara;
-    // this determine if we reCalculate and reRender page
-    let changingFlag = true;
 
     const paragraphLengthOld = this.paragraphs.length;
     const paragraphHeightOld = this.paragraphs[index].height;
 
-
-    //// ================================================================================ ////
-    //// =============================== basic work below =============================== ////
-    //// ================================================================================ ////
-
     /* ------------------------------------------------------
-      compute cursor line and offset in current div-editable
+      update state based on qurrent target height change to prevent using pageSeperation too often
     ------------------------------------------------------ */
-    if(targetId === 'paragraph'){
-      this.paragraphs[index].selectionStart.offset = RecursionCounter(targetElement)[0];
-      this.paragraphs[index].selectionStart.line = parseInt(this.paragraphs[index].selectionStart.offset / this.lineCharNum[targetClassName]);
-    }
-
-    /* ------------------------------------------------------
-      calculate and update qurrent target height and line
-    ------------------------------------------------------ */
-    if(targetInnerHTML != this.paragraphs[index].innerHTML){
-      // we need them both
+    if(paragraphHeightOld != targetHeight){
+      this.paragraphs[index].height = targetHeight;
+      this.paragraphs[index].line = targetLine;
       this.paragraphs[index].innerHTML = targetInnerHTML;
       this.paragraphs[index].text = targetText;
-      this.paragraphs[index].height = targetHeight;
-
-      // updating line number
-      this.paragraphs[index].line = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
     }
 
     //// ===============================     DEBUG HERE    ========================================== ////
@@ -391,12 +363,12 @@ export default class scripts{
         If current paragraph is empty, updating current focus
         target position for a selectbox
       ------------------------------------------------------ */
-      if(this.paragraphs[index].innerHTML.length === 0){
+      if(targetInnerHTML.length === 0){
         e.preventDefault();
         const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
-        this.selectbox.top += this.paragraphs[index].height;
+        this.selectbox.top += targetHeight;
 
         this.selectbox.left = ClientRect.left;
         this.selectbox.right = ClientRect.right;
@@ -410,7 +382,7 @@ export default class scripts{
         /* ------------------------------------------------------
           If current paragraph is not empty, adding a new paragraph
         ------------------------------------------------------ */
-        newPara = {type: this.options[e.keyCode - 49], focus: true, height: 16 + this.Hdata[this.options[e.keyCode - 49]], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+        newPara = {type: this.options[e.keyCode - 49], focus: true, height: 16 + this.Hdata[this.options[e.keyCode - 49]], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
         // case: ctrl+4 => parenthetical
         if(e.keyCode === 52){
           newPara.innerHTML = newPara.text = "()";
@@ -441,12 +413,12 @@ export default class scripts{
         If current paragraph is empty, updating current focus target position
         for a selectbox
       ------------------------------------------------------ */
-      if(this.paragraphs[index].innerHTML.length === 0){
+      if(targetInnerHTML.length === 0){
         e.preventDefault();
         const ClientRect = targetElement.getBoundingClientRect();
 
         this.selectbox.top = ClientRect.top;
-        this.selectbox.top += this.paragraphs[index].height;
+        this.selectbox.top += targetHeight;
 
         this.selectbox.left = ClientRect.left;
         this.selectbox.right = ClientRect.right;
@@ -463,45 +435,44 @@ export default class scripts{
       ------------------------------------------------------ */
       else{
         e.preventDefault();
-
         switch (targetClassName) {
           case 'para-fadein':
-            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-action':
-            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-scene':
-            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-character':
-            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-parenthetical':
-            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-dialogue':
-            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-transition':
-            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
           case 'para-shot':
-            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}};
+            newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
             this.paragraphs[index].focus = false;
             break;
@@ -512,7 +483,7 @@ export default class scripts{
     /* ------------------------------------------------------
       If keydown delete when empty text
     ------------------------------------------------------ */
-    else if (e.keyCode === 8 && !this.paragraphs[index].innerHTML) {
+    else if(e.keyCode === 8 && !targetInnerHTML) {
       e.preventDefault();
       if(index != 0){
         this.paragraphs[index - 1].focus = true;
@@ -521,16 +492,29 @@ export default class scripts{
       }
     }
 
-    // else if(e.keyCode === 46){
-    //
+    /* ------------------------------------------------------
+      If keydown delete at begining when prev paragraph is empty
+    ------------------------------------------------------ */
+    else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && !this.paragraphs[index - 1].innerHTML && targetInnerHTML){
+      e.preventDefault();
+      this.paragraphs.splice(index - 1, 1);
+    }
+
+    // /* ------------------------------------------------------
+    //   If keydown delete at begining when prev paragraph is not empty
+    //     !!! THERE'S SOME ISSUE WITH THIS -> (targetOffSet === 0) alone can not deside if it's select all !!!
+    // ------------------------------------------------------ */
+    // else if(e.keyCode === 8 && targetOffSet === 0 && index > 1 && this.paragraphs[index - 1].innerHTML && targetInnerHTML){
+    //   e.preventDefault();
+    //   this.paragraphs[index].focus = false;
+    //   this.paragraphs[index - 1].focus = true;
+    //   this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
     // }
-
-
 
     /* ------------------------------------------------------
       If keydown backward when cursor at begining
     ------------------------------------------------------ */
-    else if(e.keyCode === 37 && this.paragraphs[index].selectionStart.offset === 0){
+    else if(e.keyCode === 37 && targetOffSet === 0){
       if(index != 0){
         e.preventDefault();
         this.paragraphs[index].focus = false;
@@ -542,7 +526,7 @@ export default class scripts{
     /* ------------------------------------------------------
       If keydown forward when cursor at end
     ------------------------------------------------------ */
-    else if(e.keyCode === 39 && this.paragraphs[index].selectionStart.offset === this.paragraphs[index].text.length){
+    else if(e.keyCode === 39 && targetOffSet === targetText.length){
       if(index != this.paragraphs.length - 1){
         e.preventDefault();
         this.paragraphs[index].focus = false;
@@ -554,7 +538,7 @@ export default class scripts{
     /* ------------------------------------------------------
       If keydown up
     ------------------------------------------------------ */
-    else if(e.keyCode === 38 && this.paragraphs[index].selectionStart.line === 0){
+    else if(e.keyCode === 38 && targetLineOffSet === 0){
       if(index != 0){
         e.preventDefault();
         this.paragraphs[index].focus = false;
@@ -567,7 +551,7 @@ export default class scripts{
     /* ------------------------------------------------------
       If keydown down
     ------------------------------------------------------ */
-    else if(e.keyCode === 40 && this.paragraphs[index].selectionStart.line === this.paragraphs[index].line - 1){
+    else if(e.keyCode === 40 && targetLineOffSet === targetLine - 1){
       if(index != this.paragraphs.length - 1){
         e.preventDefault();
         this.paragraphs[index].focus = false;
@@ -578,19 +562,12 @@ export default class scripts{
     }
 
     /* ------------------------------------------------------
-      Paragraphs do not need to reArranging into pages
-    ------------------------------------------------------ */
-    if(this.paragraphs.length === paragraphLengthOld && this.paragraphs[index].height === paragraphHeightOld){
-      changingFlag = false;
-    }
-
-
-    /* ------------------------------------------------------
       ReArranging Paragraphs into Pages
     ------------------------------------------------------ */
-    if(changingFlag){
+    if(this.paragraphs.length != paragraphLengthOld || targetHeight != paragraphHeightOld){
       this.pageSeperation_monitor(parseInt(targetElement.attributes['data-pageNumber'].value))
     }
+
   }
 
 } // End of mobx-script

@@ -23,10 +23,10 @@
 }
 
 
-@font-face
-  font-family 'courier final draft bold italic'
-  font-style normal
-  src url('./font-courier/Courier Final Draft Bold Italic.ttf')
+// @font-face
+//   font-family 'courier final draft bold italic'
+//   font-style normal
+//   src url('./font-courier/Courier Final Draft Bold Italic.ttf')
 
 @font-face
   font-family 'courier final draft bold'
@@ -38,10 +38,10 @@
   font-style normal
   src url('./font-courier/Courier Final Draft Regular.ttf')
 
-@font-face
-  font-family 'courier final draft italic'
-  font-style normal
-  src url('./font-courier/Courier Final Draft Italic.ttf')
+// @font-face
+//   font-family 'courier final draft italic'
+//   font-style normal
+//   src url('./font-courier/Courier Final Draft Italic.ttf')
 
 // @font-face
 //   font-family 'courier new'
@@ -238,20 +238,18 @@ body
   // font: 12pt "courier final draft"
   display: block
   padding: 0
+  &:focus
+    outline: none !important
+    border: none
+    box-shadow: 0 0 10px #719ECE
   &:empty:focus:before
     content: attr(data-placeholder)
     color: rgba(0,0,0,0.2)
+  &:hover:not(:focus)
+    outline: none !important
+    border: none
+    box-shadow: 0 0 10px #d3d3d3
 
-
-#paragraph:focus
-  outline: none !important
-  border: none
-  box-shadow: 0 0 10px #719ECE
-
-// #paragraph
-//   font: 12pt "courier final draft"
-//   b
-//     font: 12pt "courier final draft bold"
 
 .para-fadein
   width: 6.1in

@@ -33,7 +33,7 @@ export default class Script extends Component{
     });
   }
   // componentWillUpdate(a,b){
-  //   // console.log(123);
+  //   console.log('this should not be happening... because mobx override this, nothing you can do here!');
   //   return false;
   // }
   handleBack(){
@@ -47,10 +47,9 @@ export default class Script extends Component{
     return (
       <div
         className='script'
-        // onKeyUp={(e) => e.target.id === 'paragraph' ? MobxScript.handleText(e) : ''}
         onKeyDown={(e) => e.target.id === 'paragraph' ? MobxScript.handleKey(e) : ''}
         onBlur={(e) => e.target.id === 'paragraph' ? MobxScript.handleBlur(e) : ''}
-        >
+      >
 
         <div className='script_tool'>
           <div className='script_save' onClick={() => MobxScript.saveScript()}>save</div>

@@ -21,7 +21,6 @@ const routes = (
     <Router history={browserHistory}>
       <Route path='/' component={DashBoard} />
       <Route path='/:id' component={Script} />
-      {/* <Route path='*' component={Script} /> */}
     </Router>
   </Provider>
 )

@@ -121,6 +121,7 @@ export default class scripts{
   ------------------------------------------------------ */
   @action addNewScript(){
     this.titlePage = {title: 'NEW SCRIPT', author: 'AUTHOR', extra: 'EXTRA: this and that', contact: 'contact info:'};
+    // First line is always FADE IN:
     this.paragraphs = [{type: 'para-fadein', focus: true, innerHTML: 'FADE IN:', text: 'FADE IN:', selectionStart: {line:0,offset:8}, height: 16 + this.Hdata['para-fadein'], key: Math.random(), line: 1}];
     this.pages = [[0,0]];
     this.lastSave = Date.now();
@@ -258,6 +259,7 @@ export default class scripts{
   //   this.selectbox.display='none';
   // }
 
+
   /* ------------------------------------------------------
 
     Handle blur of paragraph, text will be saved, and page will be reCalculated if needed
@@ -273,6 +275,11 @@ export default class scripts{
     const targetOffSet = util.RecursionCounter(targetElement)[0];
     const targetLineOffSet = parseInt(targetOffSet / this.lineCharNum[targetClassName]);
     const targetLine = parseInt(targetText.length / this.lineCharNum[targetClassName]) + 1;
+
+    /* ------------------------------------------------------
+      Set focus false
+    ------------------------------------------------------ */
+    this.paragraphs[index].focus = false;
 
     const paragraphLengthOld = this.paragraphs.length;
     const paragraphHeightOld = this.paragraphs[index].height;
@@ -383,7 +390,6 @@ export default class scripts{
         // show selectbox
         this.selectbox.index = index;
         this.selectbox.display = 'block';
-        this.paragraphs[index].focus = false;
       }else{
 
         /* ------------------------------------------------------
@@ -396,7 +402,6 @@ export default class scripts{
           newPara.selectionStart = {line:0,offset:1}
         }
         this.paragraphs.splice(index + 1, 0, newPara);
-        this.paragraphs[index].focus = false;
 
         // console.log(this.paragraphs[index].type);
       }
@@ -433,7 +438,6 @@ export default class scripts{
         // show selectbox
         this.selectbox.index = index;
         this.selectbox.display = 'block';
-        this.paragraphs[index].focus = false;
       }
 
       /* ------------------------------------------------------
@@ -446,42 +450,34 @@ export default class scripts{
           case 'para-fadein':
             newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-action':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-scene':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-character':
             newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-parenthetical':
             newPara = {type: 'para-dialogue', focus: true, height: 16 + this.Hdata['para-dialogue'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-dialogue':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-transition':
             newPara = {type: 'para-scene', focus: true, height: 16 + this.Hdata['para-scene'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
           case 'para-shot':
             newPara = {type: 'para-action', focus: true, height: 16 + this.Hdata['para-action'], key: Math.random(), line: 1, selectionStart: {line:0,offset:0}, innerHTML: '', text: ''};
             this.paragraphs.splice(index + 1, 0, newPara);
-            this.paragraphs[index].focus = false;
             break;
         }
       }
@@ -515,7 +511,6 @@ export default class scripts{
       if(util.isSelected()){
         util.deleteContent();
       }else{
-        this.paragraphs[index].focus = false;
         this.paragraphs[index - 1].focus = true;
         this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
       }
@@ -527,7 +522,6 @@ export default class scripts{
     else if(e.keyCode === 37 && targetOffSet === 0){
       if(index != 0){
         e.preventDefault();
-        this.paragraphs[index].focus = false;
         this.paragraphs[index - 1].focus = true;
         this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: this.paragraphs[index - 1].text.length};
       }
@@ -539,7 +533,6 @@ export default class scripts{
     else if(e.keyCode === 39 && targetOffSet === targetText.length){
       if(index != this.paragraphs.length - 1){
         e.preventDefault();
-        this.paragraphs[index].focus = false;
         this.paragraphs[index + 1].focus = true;
         this.paragraphs[index + 1].selectionStart = {line: 0, offset: 0};
       }
@@ -551,7 +544,6 @@ export default class scripts{
     else if(e.keyCode === 38 && targetLineOffSet === 0){
       if(index != 0){
         e.preventDefault();
-        this.paragraphs[index].focus = false;
         this.paragraphs[index - 1].focus = true;
         // set cursor of prev paragraph relative to the first line of current paragraph
         this.paragraphs[index - 1].selectionStart = {line: this.paragraphs[index - 1].line - 1, offset: 0}
@@ -564,7 +556,6 @@ export default class scripts{
     else if(e.keyCode === 40 && targetLineOffSet === targetLine - 1){
       if(index != this.paragraphs.length - 1){
         e.preventDefault();
-        this.paragraphs[index].focus = false;
         this.paragraphs[index + 1].focus = true;
         // set cursor of next paragraph relative to the last line of current paragraph
         this.paragraphs[index + 1].selectionStart = {line: 0, offset: 0}

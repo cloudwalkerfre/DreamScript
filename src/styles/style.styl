@@ -23,50 +23,82 @@
 }
 
 
+@font-face
+  font-family 'courier prime'
+  font-style normal
+  font-weight normal
+  src url('./font-courier/Courier Prime.ttf')
+
+@font-face
+  font-family 'courier prime'
+  font-style normal
+  font-weight bold
+  src url('./font-courier/Courier Prime Bold.ttf')
+
+@font-face
+  font-family 'courier prime'
+  font-style italic
+  font-weight normal
+  src url('./font-courier/Courier Prime Italic.ttf')
+
+@font-face
+  font-family 'courier prime'
+  font-style italic
+  font-weight bold
+  src url('./font-courier/Courier Prime Bold Italic.ttf')
+
 // @font-face
-//   font-family 'courier final draft bold italic'
-//   font-style normal
+//   font-family 'courier final draft'
+//   font-style italic
+//   font-weight bold
 //   src url('./font-courier/Courier Final Draft Bold Italic.ttf')
-
-@font-face
-  font-family 'courier final draft bold'
-  font-style normal
-  src url('./font-courier/Courier Final Draft Bold.ttf')
-
-@font-face
-  font-family 'courier final draft'
-  font-style normal
-  src url('./font-courier/Courier Final Draft Regular.ttf')
+//
+// @font-face
+//   font-family 'courier final draft'
+//   font-style normal
+//   font-weight bold
+//   src url('./font-courier/Courier Final Draft Bold.ttf')
+//
+// @font-face
+//   font-family 'courier final draft'
+//   font-style normal
+//   font-weight normal
+//   src url('./font-courier/Courier Final Draft Regular.ttf')
 
 // @font-face
-//   font-family 'courier final draft italic'
-//   font-style normal
+//   font-family 'courier final draft'
+//   font-style italic
+//   font-weight normal
 //   src url('./font-courier/Courier Final Draft Italic.ttf')
 
 // @font-face
 //   font-family 'courier new'
 //   font-style normal
+//   font-weight normal
 //   src url('./font-courier/Courier New.ttf')
 //
 // @font-face
-//   font-family 'courier new bold'
+//   font-family 'courier new'
 //   font-style normal
+//   font-weight bold
 //   src url('./font-courier/Courier New Bold.ttf')
 //
 // @font-face
-//   font-family 'courier new italic'
-//   font-style normal
+//   font-family 'courier new'
+//   font-style italic
+//   font-weight normal
 //   src url('./font-courier/Courier New Italic font.ttf')
 //
 // @font-face
-//   font-family 'courier new bold italic'
-//   font-style normal
+//   font-family 'courier new'
+//   font-style italic
+//   font-weight bold
 //   src url('./font-courier/Courier New Bold Italic font.ttf')
 
 body
   padding: 0
   background-color: #d3d3d3
-  font: 12pt "courier final draft"
+  font: normal 12pt "courier prime"
 
 
 * {
@@ -99,19 +131,19 @@ body
   display: inline-block
   h3
     text-transform: uppercase
-    font: 10pt "courier final draft bold"
+    font: bold 10pt "courier prime"
     height: 72px
     overflow: hidden
   .script_time
-    font: 8pt "courier final draft"
+    font: 8pt "courier prime"
     margin-top: 30px
   .script_author
     overflow: hidden
     margin-top: 20px
     height: 42px
-    font: 10pt "courier final draft"
+    font: 10pt "courier prime"
   .script_extra
-    font: 9pt "courier final draft"
+    font: 9pt "courier prime"
     margin-top: 30px
     height: 42px
     overflow: hidden
@@ -143,6 +175,7 @@ body
   box-shadow: 0 0 5px white
   border-radius: 5px
   background-color: rgba(87, 87, 87, 0.2)
+  line-height: 20px
   &:hover
     cursor:pointer
 
@@ -157,6 +190,7 @@ body
   box-shadow: 0 0 3px white
   border-radius: 5px
   background-color: rgba(87, 87, 87, 0.2)
+  line-height: 20px
   &:hover
     cursor:pointer
 
@@ -186,7 +220,7 @@ body
 .title_title
   margin-top: 300px
   text-transform: uppercase
-  font: 18pt "courier final draft bold"
+  font: bold 18pt "courier prime"
   // width: 6.1in
   // display: inline-block
 
@@ -255,7 +289,7 @@ body
   width: 6.1in
   text-transform: uppercase
   text-align: center
-  font: 12pt "courier final draft bold"
+  font: bold 12pt "courier prime"
   margin: 20px auto 0 auto
   &:focus
     box-shadow: 0 0 10px black
@@ -269,7 +303,7 @@ body
 .para-scene
   width: 6.1in
   // text-transform: uppercase
-  font: 12pt "courier final draft bold"
+  font: bold 12pt "courier prime"
   margin: 30px auto 0 auto
   text-align: left
 
@@ -278,7 +312,7 @@ body
   width: 6.1in
   text-transform: uppercase
   text-align: center
-  font: 12pt "courier final draft bold"
+  font: bold 12pt "courier prime"
   margin: 20px auto 0 auto
 
 
